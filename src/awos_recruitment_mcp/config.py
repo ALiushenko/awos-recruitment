@@ -1,0 +1,46 @@
+"""Configuration for the AWOS Recruitment MCP server.
+
+Loads settings from environment variables with sensible defaults.
+A `.env` file in the project root is loaded automatically via python-dotenv.
+"""
+
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+
+from dotenv import load_dotenv
+
+# Load .env file before anything reads os.environ
+load_dotenv()
+
+
+@dataclass(frozen=True)
+class Config:
+    """Immutable server configuration.
+
+    Attributes:
+        host: Network interface to bind to.
+        port: TCP port for the HTTP transport.
+        version: Semantic version exposed via MCP server metadata.
+    """
+
+    host: str = "0.0.0.0"
+    port: int = 8000
+    version: str = "0.1.0"
+
+    @classmethod
+    def from_env(cls) -> Config:
+        """Create a Config by reading environment variables.
+
+        Recognised variables (all optional, fall back to class defaults):
+            AWOS_HOST    -- network interface, e.g. "127.0.0.1"
+            AWOS_PORT    -- TCP port, e.g. "9000"
+            AWOS_VERSION -- version string, e.g. "0.2.0"
+        """
+        defaults = cls()
+        return cls(
+            host=os.environ.get("AWOS_HOST", defaults.host),
+            port=int(os.environ.get("AWOS_PORT", str(defaults.port))),
+            version=os.environ.get("AWOS_VERSION", defaults.version),
+        )
