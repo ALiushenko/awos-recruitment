@@ -15,15 +15,15 @@
 
 ## Slice 2: Skill Validation Models + CLI (Human Output) + Justfile
 
-- [ ] **Slice 2: Skill schema validation with human-readable CLI output**
-  - [ ] Add `python-frontmatter` and `pyyaml` as runtime dependencies in `server/pyproject.toml`. Run `uv lock` to update the lock file. **[Agent: python-expert]**
-  - [ ] Create `server/src/awos_recruitment_mcp/models/skill_metadata.py` — `SkillMetadata` Pydantic model with `extra="forbid"`, required `name` (pattern-validated) and `description`, optional fields with hyphen aliases (`argument-hint`, `disable-model-invocation`, `user-invocable`, etc.), and optional `version` field. Export from `models/__init__.py`. **[Agent: python-expert]**
-  - [ ] Create `server/src/awos_recruitment_mcp/validate/__init__.py` — core validation logic: scan `registry/skills/` for subdirectories, parse SKILL.md front matter with `python-frontmatter`, validate against `SkillMetadata`, check non-empty markdown body, collect errors. **[Agent: python-expert]**
-  - [ ] Create `server/src/awos_recruitment_mcp/validate/__main__.py` — CLI entry point with `argparse`: `--format human` (default), `--registry-path` (default `../registry`). Human output lists PASS/FAIL per file with error details. Exit code 0 on success, 1 on failure. **[Agent: python-expert]**
-  - [ ] Create `justfile` at repo root with `validate-registry` task: `cd server && uv run python -m awos_recruitment_mcp.validate {{ARGS}}`. **[Agent: general-purpose]**
-  - [ ] Write unit tests in `server/tests/test_validate.py`: valid skill passes, missing `name` fails, invalid `name` chars fails, unknown field fails, empty body fails. **[Agent: python-expert]**
-  - [ ] Run `just validate-registry` against the real registry. Verify exit code 0 and human-readable output shows all skills passing. Run `pytest` to verify all tests (existing + new) pass. **[Agent: qa-tester]**
-  - [ ] Git commit. **[Agent: general-purpose]**
+- [x] **Slice 2: Skill schema validation with human-readable CLI output**
+  - [x] Add `python-frontmatter` and `pyyaml` as runtime dependencies in `server/pyproject.toml`. Run `uv lock` to update the lock file. **[Agent: python-expert]**
+  - [x] Create `server/src/awos_recruitment_mcp/models/skill_metadata.py` — `SkillMetadata` Pydantic model with `extra="forbid"`, required `name` (pattern-validated) and `description`, optional fields with hyphen aliases (`argument-hint`, `disable-model-invocation`, `user-invocable`, etc.), and optional `version` field. Export from `models/__init__.py`. **[Agent: python-expert]**
+  - [x] Create `server/src/awos_recruitment_mcp/validate/__init__.py` — core validation logic: scan `registry/skills/` for subdirectories, parse SKILL.md front matter with `python-frontmatter`, validate against `SkillMetadata`, check non-empty markdown body, collect errors. **[Agent: python-expert]**
+  - [x] Create `server/src/awos_recruitment_mcp/validate/__main__.py` — CLI entry point with `argparse`: `--format human` (default), `--registry-path` (default `../registry`). Human output lists PASS/FAIL per file with error details. Exit code 0 on success, 1 on failure. **[Agent: python-expert]**
+  - [x] Create `justfile` at repo root with `validate-registry` task: `cd server && uv run python -m awos_recruitment_mcp.validate {{ARGS}}`. **[Agent: general-purpose]**
+  - [x] Write unit tests in `server/tests/test_validate.py`: valid skill passes, missing `name` fails, invalid `name` chars fails, unknown field fails, empty body fails. **[Agent: python-expert]**
+  - [x] Run `just validate-registry` against the real registry. Verify exit code 0 and human-readable output shows all skills passing. Run `pytest` to verify all tests (existing + new) pass. **[Agent: qa-tester]**
+  - [x] Git commit. **[Agent: general-purpose]**
 
 ---
 

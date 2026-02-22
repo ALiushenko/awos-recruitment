@@ -1,4 +1,4 @@
-"""Registry validation logic for skills (and, in the future, MCP definitions)."""
+"""Registry validation logic for skills and MCP definitions."""
 
 from __future__ import annotations
 
@@ -6,9 +6,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import frontmatter
+import yaml
 from pydantic import ValidationError as PydanticValidationError
 
-from awos_recruitment_mcp.models import SkillMetadata
+from awos_recruitment_mcp.models import McpDefinition, SkillMetadata
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,11 +135,96 @@ def validate_skills(registry_path: Path) -> list[ValidationResult]:
     return results
 
 
+def validate_mcp_definitions(registry_path: Path) -> list[ValidationResult]:
+    """Validate every MCP definition under *registry_path*/mcp.
+
+    Each ``.yaml`` file in the ``mcp/`` directory is expected to conform to
+    :class:`~awos_recruitment_mcp.models.McpDefinition`.
+
+    Returns:
+        A list of :class:`ValidationResult` objects, one per YAML file.
+    """
+
+    mcp_dir = registry_path / "mcp"
+    results: list[ValidationResult] = []
+
+    if not mcp_dir.is_dir():
+        return results
+
+    for yaml_file in sorted(mcp_dir.iterdir()):
+        if not yaml_file.is_file() or yaml_file.suffix != ".yaml":
+            continue
+
+        relative_path = str(yaml_file.relative_to(registry_path))
+        errors: list[ValidationError] = []
+
+        # Parse YAML.
+        try:
+            with open(yaml_file, "r", encoding="utf-8") as fh:
+                data = yaml.safe_load(fh)
+        except yaml.YAMLError as exc:
+            errors.append(
+                ValidationError(
+                    file=relative_path,
+                    field=None,
+                    message=f"Failed to parse YAML: {exc}",
+                )
+            )
+            results.append(
+                ValidationResult(file=relative_path, valid=False, errors=errors)
+            )
+            continue
+
+        if not isinstance(data, dict):
+            errors.append(
+                ValidationError(
+                    file=relative_path,
+                    field=None,
+                    message="YAML content is not a mapping",
+                )
+            )
+            results.append(
+                ValidationResult(file=relative_path, valid=False, errors=errors)
+            )
+            continue
+
+        # Validate against the Pydantic model.
+        try:
+            McpDefinition.model_validate(data)
+        except PydanticValidationError as exc:
+            for err in exc.errors():
+                loc = ".".join(str(part) for part in err["loc"]) or None
+                errors.append(
+                    ValidationError(
+                        file=relative_path,
+                        field=loc,
+                        message=err["msg"],
+                    )
+                )
+        except ValueError as exc:
+            errors.append(
+                ValidationError(
+                    file=relative_path,
+                    field="config",
+                    message=str(exc),
+                )
+            )
+
+        results.append(
+            ValidationResult(
+                file=relative_path,
+                valid=len(errors) == 0,
+                errors=errors,
+            )
+        )
+
+    return results
+
+
 def validate_registry(registry_path: Path) -> list[ValidationResult]:
     """Validate the entire registry at *registry_path*.
 
-    Currently only validates skills.  MCP definitions will be added in a
-    future slice.
+    Validates both skill definitions and MCP server definitions.
 
     Returns:
         Combined list of :class:`ValidationResult` objects.
@@ -146,4 +232,5 @@ def validate_registry(registry_path: Path) -> list[ValidationResult]:
 
     results: list[ValidationResult] = []
     results.extend(validate_skills(registry_path))
+    results.extend(validate_mcp_definitions(registry_path))
     return results

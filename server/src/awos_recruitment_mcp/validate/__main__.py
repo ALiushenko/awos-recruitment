@@ -8,6 +8,7 @@ Usage::
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -41,20 +42,42 @@ def main() -> None:
 
     results = validate_registry(registry_path)
 
+    total_entries = len(results)
+    failed_files = sum(1 for r in results if not r.valid)
+    passed_files = total_entries - failed_files
+    all_valid = failed_files == 0
+
     if args.format == "json":
-        print("JSON output will be implemented in Slice 3.")
-        sys.exit(0)
+        errors_list = []
+        for result in results:
+            for error in result.errors:
+                errors_list.append(
+                    {
+                        "file": error.file,
+                        "field": error.field,
+                        "message": error.message,
+                    }
+                )
+
+        output = {
+            "valid": all_valid,
+            "errors": errors_list,
+            "summary": {
+                "total": total_entries,
+                "passed": passed_files,
+                "failed": failed_files,
+            },
+        }
+        print(json.dumps(output, indent=2))
+        sys.exit(0 if all_valid else 1)
 
     # Human-readable output.
-    total_entries = len(results)
-    failed_files = 0
     total_errors = 0
 
     for result in results:
         if result.valid:
             print(f"OK    {result.file}")
         else:
-            failed_files += 1
             total_errors += len(result.errors)
             print(f"FAIL  {result.file}")
             for error in result.errors:
