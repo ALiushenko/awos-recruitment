@@ -27,8 +27,8 @@ _Once the registry is live, add semantic search and zero-friction installation._
   - [x] **Natural Language Query:** Accept natural language search queries from clients and return ranked results based on semantic relevance.
 
 - [ ] **Capability Installation**
-  - [ ] **npx Install Flow:** Enable one-command installation of discovered capabilities via an npx package, directly from search results.
-  - [ ] **Client-Initiated Discovery Loop:** Support the full end-to-end flow: client searches, server returns ranked matches, client selects, capability is installed.
+  - [ ] **Install Discovered Skills:** Install discovered skills into the user's Claude Code configuration via an npx package.
+  - [ ] **Install MCP Server Definitions:** Install discovered MCP server definitions into the user's `.mcp.json` via an npx package.
 
 ---
 
