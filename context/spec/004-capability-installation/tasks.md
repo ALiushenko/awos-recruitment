@@ -56,9 +56,9 @@ _First real CLI value: `npx awos skill modern-python-development` works against 
 
 _Second CLI value: `npx awos mcp context7` writes to `.mcp.json`._
 
-- [ ] **Add `json-merge.ts` library.** Read `.mcp.json` from cwd (or start with `{"mcpServers":{}}` if missing). For a given server key and config, check if key exists in `mcpServers` (conflict). If not, merge and write back. Handle malformed JSON with a clear error. **[Agent: typescript-expert]**
-- [ ] **Add `commands/mcp.ts`.** POST names to `{AWOS_SERVER_URL}/bundle/mcp` via `download.ts`. For each extracted YAML file: parse with `yaml`, extract the server key and config from the `config` field, call `json-merge.ts` to write to `.mcp.json`. Print per-item results. Exit non-zero if any failed. **[Agent: typescript-expert]**
-- [ ] **Add unit tests** for `json-merge.ts` (create new file, merge into existing, conflict detection, preserve unknown keys, malformed JSON) and `commands/mcp.ts` (temp dirs, mock HTTP, verify `.mcp.json` contents, conflict detection). **[Agent: typescript-expert]**
-- [ ] **Verify end-to-end:** Start the AWOS server. Run `cd cli && node dist/index.js mcp context7`. Confirm `.mcp.json` exists with the `context7` server entry. Run again — confirm conflict error. Run with nonexistent name — confirm not-found error. Run `node dist/index.js mcp context7 playwright` — confirm multi-install summary. **[Agent: qa-tester]**
+- [x] **Add `json-merge.ts` library.** Read `.mcp.json` from cwd (or start with `{"mcpServers":{}}` if missing). For a given server key and config, check if key exists in `mcpServers` (conflict). If not, merge and write back. Handle malformed JSON with a clear error. **[Agent: typescript-expert]**
+- [x] **Add `commands/mcp.ts`.** POST names to `{AWOS_SERVER_URL}/bundle/mcp` via `download.ts`. For each extracted YAML file: parse with `yaml`, extract the server key and config from the `config` field, call `json-merge.ts` to write to `.mcp.json`. Print per-item results. Exit non-zero if any failed. **[Agent: typescript-expert]**
+- [x] **Add unit tests** for `json-merge.ts` (create new file, merge into existing, conflict detection, preserve unknown keys, malformed JSON) and `commands/mcp.ts` (temp dirs, mock HTTP, verify `.mcp.json` contents, conflict detection). **[Agent: typescript-expert]**
+- [x] **Verify end-to-end:** Start the AWOS server. Run `cd cli && node dist/index.js mcp context7`. Confirm `.mcp.json` exists with the `context7` server entry. Run again — confirm conflict error. Run with nonexistent name — confirm not-found error. Run `node dist/index.js mcp context7 playwright` — confirm multi-install summary. **[Agent: qa-tester]**
 
-- [ ] **Git commit** **[Agent: general-purpose]**
+- [x] **Git commit** **[Agent: general-purpose]**

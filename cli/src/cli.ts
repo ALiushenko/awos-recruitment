@@ -1,3 +1,4 @@
+import { installMcpServers } from "./commands/mcp.js";
 import { installSkills } from "./commands/skill.js";
 import { CliError } from "./lib/errors.js";
 
@@ -34,7 +35,7 @@ export async function run(): Promise<void> {
       await installSkills(names);
       break;
     case "mcp":
-      console.log("mcp command: not yet implemented");
+      await installMcpServers(names);
       break;
   }
 }
