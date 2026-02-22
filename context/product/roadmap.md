@@ -8,9 +8,9 @@ _This roadmap outlines our strategic direction based on customer needs and busin
 
 _The core infrastructure: get the MCP server running with a functional registry and basic search._
 
-- [ ] **MCP Server & Protocol Integration**
-  - [ ] **MCP Server Scaffold:** Stand up the remote MCP server with a health check and basic request/response lifecycle.
-  - [ ] **MCP Tool Endpoints:** Expose search and discovery as MCP tools that any compatible AI assistant can call natively.
+- [x] **MCP Server & Protocol Integration**
+  - [x] **MCP Server Scaffold:** Stand up the remote MCP server with a health check and basic request/response lifecycle.
+  - [x] **MCP Tool Endpoints:** Expose search and discovery as MCP tools that any compatible AI assistant can call natively.
 
 - [ ] **Capability Registry & Indexing**
   - [ ] **Git-Managed Catalog:** Ingest and index a Git-managed library of skills, agents, and tools with structured metadata (name, description, tags, stack compatibility, maturity, author).

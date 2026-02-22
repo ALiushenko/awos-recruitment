@@ -1,7 +1,7 @@
 # Functional Specification: MCP Server & Protocol Integration
 
 - **Roadmap Item:** MCP Server & Protocol Integration — Stand up the remote MCP server and expose search and discovery as MCP tools.
-- **Status:** Draft
+- **Status:** Completed
 - **Author:** AWOS
 
 ---
@@ -30,10 +30,10 @@ The system must provide a running MCP server accessible over the network.
   - **status**: A string indicating the server's health (e.g., `"ok"`).
   - **version**: A string indicating the server's version (e.g., `"0.1.0"`).
 - **Acceptance Criteria:**
-  - [ ] The server starts and listens for incoming Streamable HTTP connections.
-  - [ ] An MCP client (e.g., Claude Code) can connect to the server and complete the MCP initialization handshake.
-  - [ ] A request to the health check endpoint returns a JSON response containing `status` and `version` fields.
-  - [ ] The health check returns HTTP 200 when the server is operational.
+  - [x] The server starts and listens for incoming Streamable HTTP connections.
+  - [x] An MCP client (e.g., Claude Code) can connect to the server and complete the MCP initialization handshake.
+  - [x] A request to the health check endpoint returns a JSON response containing `status` and `version` fields.
+  - [x] The health check returns HTTP 200 when the server is operational.
 
 ### 2.2. MCP Tool: `search_capabilities`
 
@@ -48,11 +48,11 @@ The server must expose a single MCP tool named `search_capabilities` that client
 - **No-match behavior:** If no results match, the tool returns an **empty list** with a success status. The client is responsible for communicating "no results" to the user.
 - **Phase 1 behavior:** The search tool returns **mock/hardcoded data** regardless of the query content. Actual search logic will be implemented in later phases.
 - **Acceptance Criteria:**
-  - [ ] The `search_capabilities` tool is listed when the client requests the server's available tools.
-  - [ ] Calling `search_capabilities` with any query string returns a valid response containing a list of results.
-  - [ ] Each result in the response contains `name`, `description`, and `tags` fields.
-  - [ ] The response contains no more than 10 results.
-  - [ ] Calling `search_capabilities` returns a successful response (not an error) even if the query is an empty string.
+  - [x] The `search_capabilities` tool is listed when the client requests the server's available tools.
+  - [x] Calling `search_capabilities` with any query string returns a valid response containing a list of results.
+  - [x] Each result in the response contains `name`, `description`, and `tags` fields.
+  - [x] The response contains no more than 10 results.
+  - [x] Calling `search_capabilities` returns a successful response (not an error) even if the query is an empty string.
 
 ---
 
