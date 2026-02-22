@@ -39,6 +39,8 @@ All commands run from the **repository root** via `just`:
 | `just test tests/test_validate.py` | Run a specific test file |
 | `just validate-registry` | Validate all registry entries |
 | `just validate-registry --format json` | Validate with JSON output (for CI) |
+| `just build-cli` | Build the CLI (TypeScript → `cli/dist/`) |
+| `just test-cli` | Run CLI tests |
 
 ## Server Configuration
 
