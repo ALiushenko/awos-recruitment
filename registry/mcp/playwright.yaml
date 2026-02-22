@@ -6,4 +6,4 @@ config:
     command: npx
     args:
       - -y
-      - "@anthropic/playwright-mcp@latest"
+      - "@playwright/mcp@latest"

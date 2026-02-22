@@ -29,10 +29,10 @@
 
 ## Slice 3: MCP Validation + JSON Output + Full Test Suite
 
-- [ ] **Slice 3: MCP definition validation + JSON output format**
-  - [ ] Create `server/src/awos_recruitment_mcp/models/mcp_definition.py` — `McpServerConfig` (with `extra="allow"`, required `type` field) and `McpDefinition` (required `name`, `description`, `config` with exactly-one-key validator). Export from `models/__init__.py`. **[Agent: python-expert]**
-  - [ ] Extend validation logic in `validate/__init__.py` to scan `registry/mcp/` for `.yaml` files, parse with `pyyaml`, validate against `McpDefinition`. **[Agent: python-expert]**
-  - [ ] Add `--format json` support to `validate/__main__.py` — output valid JSON with `valid`, `errors` array (each with `file`, `field`, `message`), and `summary` object (`total`, `passed`, `failed`). **[Agent: python-expert]**
-  - [ ] Write unit tests: valid MCP YAML passes, missing `config` fails, multiple config keys fails, missing `type` in server config fails. Write integration tests: JSON output is valid JSON with correct shape, exit code 0 for valid registry / 1 for invalid, full registry scan discovers all entries. Add smoke test: all example entries in `registry/` pass validation. **[Agent: python-expert]**
-  - [ ] Run `just validate-registry` and `just validate-registry --format json` against the real registry. Verify both produce correct output and exit code 0. Run full `pytest` suite to verify all tests pass. **[Agent: qa-tester]**
-  - [ ] Git commit. **[Agent: general-purpose]**
+- [x] **Slice 3: MCP definition validation + JSON output format**
+  - [x] Create `server/src/awos_recruitment_mcp/models/mcp_definition.py` — `McpServerConfig` (with `extra="allow"`, required `type` field) and `McpDefinition` (required `name`, `description`, `config` with exactly-one-key validator). Export from `models/__init__.py`. **[Agent: python-expert]**
+  - [x] Extend validation logic in `validate/__init__.py` to scan `registry/mcp/` for `.yaml` files, parse with `pyyaml`, validate against `McpDefinition`. **[Agent: python-expert]**
+  - [x] Add `--format json` support to `validate/__main__.py` — output valid JSON with `valid`, `errors` array (each with `file`, `field`, `message`), and `summary` object (`total`, `passed`, `failed`). **[Agent: python-expert]**
+  - [x] Write unit tests: valid MCP YAML passes, missing `config` fails, multiple config keys fails, missing `type` in server config fails. Write integration tests: JSON output is valid JSON with correct shape, exit code 0 for valid registry / 1 for invalid, full registry scan discovers all entries. Add smoke test: all example entries in `registry/` pass validation. **[Agent: python-expert]**
+  - [x] Run `just validate-registry` and `just validate-registry --format json` against the real registry. Verify both produce correct output and exit code 0. Run full `pytest` suite to verify all tests pass. **[Agent: qa-tester]**
+  - [x] Git commit. **[Agent: general-purpose]**
