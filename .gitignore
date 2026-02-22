@@ -63,3 +63,5 @@ htmlcov/
 .nox/
 .coverage
 .coverage.*
+
+.serena
