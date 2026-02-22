@@ -1,4 +1,4 @@
-"""Tests for the POST /bundle/skills endpoint."""
+"""Tests for the POST /bundle/skills and POST /bundle/mcp endpoints."""
 
 from __future__ import annotations
 
@@ -261,4 +261,182 @@ async def test_invalid_name_pattern_returns_error_body(asgi_app):
     body = response.json()
     assert "error" in body, (
         f"Expected 'error' key in response body, got {body}"
+    )
+
+
+# ===========================================================================
+# POST /bundle/mcp
+# ===========================================================================
+
+
+# ---------------------------------------------------------------------------
+# Valid request
+# ---------------------------------------------------------------------------
+
+
+async def test_mcp_valid_request_returns_200(asgi_app):
+    """POST a single valid MCP name and verify HTTP 200."""
+    transport = httpx.ASGITransport(app=asgi_app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/bundle/mcp",
+            json={"names": ["context7"]},
+        )
+
+    assert response.status_code == 200, (
+        f"Expected HTTP 200, got {response.status_code}"
+    )
+
+
+async def test_mcp_valid_request_returns_tar_gz(asgi_app):
+    """POST a single valid MCP name and verify the archive contains its YAML file."""
+    transport = httpx.ASGITransport(app=asgi_app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/bundle/mcp",
+            json={"names": ["context7"]},
+        )
+
+    buf = io.BytesIO(response.content)
+    with tarfile.open(fileobj=buf, mode="r:gz") as tar:
+        names = tar.getnames()
+
+    assert "context7.yaml" in names, (
+        f"Expected context7.yaml in archive, got {names}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Multiple valid names
+# ---------------------------------------------------------------------------
+
+
+async def test_mcp_multiple_valid_names_returns_200(asgi_app):
+    """POST two valid MCP names and verify HTTP 200."""
+    transport = httpx.ASGITransport(app=asgi_app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/bundle/mcp",
+            json={"names": ["context7", "playwright"]},
+        )
+
+    assert response.status_code == 200, (
+        f"Expected HTTP 200, got {response.status_code}"
+    )
+
+
+async def test_mcp_multiple_valid_names_contains_all(asgi_app):
+    """POST two valid MCP names and verify both YAML files are in the archive."""
+    transport = httpx.ASGITransport(app=asgi_app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/bundle/mcp",
+            json={"names": ["context7", "playwright"]},
+        )
+
+    buf = io.BytesIO(response.content)
+    with tarfile.open(fileobj=buf, mode="r:gz") as tar:
+        names = tar.getnames()
+
+    assert "context7.yaml" in names, (
+        f"Expected context7.yaml in archive, got {names}"
+    )
+    assert "playwright.yaml" in names, (
+        f"Expected playwright.yaml in archive, got {names}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Partial matches
+# ---------------------------------------------------------------------------
+
+
+async def test_mcp_partial_matches_returns_200(asgi_app):
+    """POST a mix of existing and nonexistent MCP names and verify HTTP 200."""
+    transport = httpx.ASGITransport(app=asgi_app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/bundle/mcp",
+            json={"names": ["context7", "nonexistent-tool"]},
+        )
+
+    assert response.status_code == 200, (
+        f"Expected HTTP 200, got {response.status_code}"
+    )
+
+
+async def test_mcp_partial_matches_contains_only_existing(asgi_app):
+    """POST a mix of existing and nonexistent MCP names; archive contains only the existing one."""
+    transport = httpx.ASGITransport(app=asgi_app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/bundle/mcp",
+            json={"names": ["context7", "nonexistent-tool"]},
+        )
+
+    buf = io.BytesIO(response.content)
+    with tarfile.open(fileobj=buf, mode="r:gz") as tar:
+        names = tar.getnames()
+
+    assert "context7.yaml" in names, (
+        f"Expected context7.yaml in archive, got {names}"
+    )
+    assert "nonexistent-tool.yaml" not in names, (
+        f"Did not expect nonexistent-tool.yaml in archive, got {names}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Empty names list
+# ---------------------------------------------------------------------------
+
+
+async def test_mcp_empty_names_returns_400(asgi_app):
+    """POST an empty MCP names list and verify HTTP 400."""
+    transport = httpx.ASGITransport(app=asgi_app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/bundle/mcp",
+            json={"names": []},
+        )
+
+    assert response.status_code == 400, (
+        f"Expected HTTP 400, got {response.status_code}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# All not-found
+# ---------------------------------------------------------------------------
+
+
+async def test_mcp_all_not_found_returns_200(asgi_app):
+    """POST MCP names that do not match any config and verify HTTP 200."""
+    transport = httpx.ASGITransport(app=asgi_app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/bundle/mcp",
+            json={"names": ["does-not-exist"]},
+        )
+
+    assert response.status_code == 200, (
+        f"Expected HTTP 200, got {response.status_code}"
+    )
+
+
+async def test_mcp_all_not_found_returns_empty_archive(asgi_app):
+    """POST MCP names that do not match any config and verify the archive is empty."""
+    transport = httpx.ASGITransport(app=asgi_app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/bundle/mcp",
+            json={"names": ["does-not-exist"]},
+        )
+
+    buf = io.BytesIO(response.content)
+    with tarfile.open(fileobj=buf, mode="r:gz") as tar:
+        members = tar.getmembers()
+
+    assert len(members) == 0, (
+        f"Expected empty archive, got {len(members)} members: {[m.name for m in members]}"
     )

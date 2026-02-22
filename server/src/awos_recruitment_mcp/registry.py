@@ -50,6 +50,42 @@ def resolve_skill_paths(
     return found, not_found
 
 
+def resolve_mcp_paths(
+    names: list[str],
+    registry_path: str | Path,
+) -> tuple[list[Path], list[str]]:
+    """Resolve MCP server names to their YAML file paths under *registry_path*.
+
+    For each name in *names*, checks whether ``mcp/<name>.yaml`` exists as a
+    file under the registry root.  Names that resolve to an existing file are
+    collected into the first element of the returned tuple; names that do not
+    match any file end up in the second element.
+
+    Args:
+        names: MCP server names to look up (without the ``.yaml`` suffix).
+        registry_path: Root directory of the registry.
+
+    Returns:
+        A ``(found_paths, not_found)`` tuple where *found_paths* is a list of
+        :class:`~pathlib.Path` objects pointing to the matched YAML files and
+        *not_found* is a list of names with no corresponding file.
+    """
+    root = Path(registry_path)
+    mcp_dir = root / "mcp"
+
+    found: list[Path] = []
+    not_found: list[str] = []
+
+    for name in names:
+        yaml_path = mcp_dir / f"{name}.yaml"
+        if yaml_path.is_file():
+            found.append(yaml_path)
+        else:
+            not_found.append(name)
+
+    return found, not_found
+
+
 def load_registry(registry_path: str | Path) -> list[RegistryCapability]:
     """Load all capabilities from the registry at *registry_path*.
 
