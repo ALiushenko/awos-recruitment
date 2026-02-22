@@ -13,6 +13,43 @@ from awos_recruitment_mcp.models import RegistryCapability
 logger = logging.getLogger(__name__)
 
 
+def resolve_skill_paths(
+    names: list[str],
+    registry_path: str | Path,
+) -> tuple[list[Path], list[str]]:
+    """Resolve skill names to their directory paths under *registry_path*.
+
+    For each name in *names*, checks whether ``skills/<name>/`` exists as a
+    directory under the registry root.  Names that resolve to an existing
+    directory are collected into the first element of the returned tuple;
+    names that do not match any directory end up in the second element.
+
+    Args:
+        names: Skill directory names to look up.
+        registry_path: Root directory of the registry.
+
+    Returns:
+        A ``(found_paths, not_found)`` tuple where *found_paths* is a list of
+        :class:`~pathlib.Path` objects pointing to the matched skill
+        directories and *not_found* is a list of names with no corresponding
+        directory.
+    """
+    root = Path(registry_path)
+    skills_dir = root / "skills"
+
+    found: list[Path] = []
+    not_found: list[str] = []
+
+    for name in names:
+        skill_path = skills_dir / name
+        if skill_path.is_dir():
+            found.append(skill_path)
+        else:
+            not_found.append(name)
+
+    return found, not_found
+
+
 def load_registry(registry_path: str | Path) -> list[RegistryCapability]:
     """Load all capabilities from the registry at *registry_path*.
 

@@ -5,15 +5,19 @@ Import `mcp` from here whenever you need to register tools, resources,
 or prompts.
 """
 
+import io
+import tarfile
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
 from fastmcp import FastMCP
+from pydantic import ValidationError
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 
 from awos_recruitment_mcp.config import Config
-from awos_recruitment_mcp.registry import load_registry
+from awos_recruitment_mcp.models.bundle import BundleRequest
+from awos_recruitment_mcp.registry import load_registry, resolve_skill_paths
 from awos_recruitment_mcp.search_index import build_index
 
 config = Config.from_env()
@@ -50,6 +54,52 @@ mcp = FastMCP(
 async def health_check(request: Request) -> JSONResponse:
     """Return server health status and version."""
     return JSONResponse({"status": "ok", "version": config.version}, status_code=200)
+
+
+@mcp.custom_route("/bundle/skills", methods=["POST"])
+async def bundle_skills(request: Request) -> Response:
+    """Bundle one or more skills into a tar.gz archive.
+
+    Expects a JSON body matching :class:`BundleRequest`.  Resolves each
+    requested skill name to its on-disk directory, then streams back a
+    gzip-compressed tar archive containing ``<name>/SKILL.md`` and any
+    ``<name>/references/*.md`` files found for each skill.
+
+    Returns 400 with a JSON error body when the request fails validation.
+    """
+    try:
+        body = await request.json()
+        bundle_request = BundleRequest.model_validate(body)
+    except ValidationError as exc:
+        return JSONResponse(
+            {"error": "Validation failed", "detail": exc.errors()},
+            status_code=400,
+        )
+
+    unique_names = list(dict.fromkeys(bundle_request.names))
+    found_paths, _not_found = resolve_skill_paths(
+        unique_names, config.registry_path
+    )
+
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:gz") as tar:
+        for skill_dir in found_paths:
+            skill_name = skill_dir.name
+
+            skill_md = skill_dir / "SKILL.md"
+            if skill_md.is_file():
+                tar.add(str(skill_md), arcname=f"{skill_name}/SKILL.md")
+
+            references_dir = skill_dir / "references"
+            if references_dir.is_dir():
+                for ref_file in sorted(references_dir.iterdir()):
+                    if ref_file.is_file():
+                        tar.add(
+                            str(ref_file),
+                            arcname=f"{skill_name}/references/{ref_file.name}",
+                        )
+
+    return Response(content=buf.getvalue(), media_type="application/gzip")
 
 
 # Import tool modules AFTER `mcp` is created so they can reference it without
