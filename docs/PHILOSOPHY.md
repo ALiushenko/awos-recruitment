@@ -15,10 +15,14 @@ When the Recruitment system "hires" an AI team, all resulting skills, MCP tools,
 Modern LLMs suffer from context bloat. Giving an AI agent access to every framework, database, and tool simultaneously increases the risk of hallucinations, dilutes its focus, and drives up token costs. 
 AWOS Recruitment operates as a strict filter. By dynamically provisioning only the specific skills required for the current architectural specification, we keep the AI on a strict "information diet." This guarantees laser focus and high-fidelity output for the task at hand.
 
-## 3. Skills as First-Class Citizens
-In the AWOS Recruitment ecosystem, the delivery of *skills* is prioritized over static agent personas. 
-* **Actionable Knowledge:** Skills contain the actual, concrete instructions, code standards, and workflows. 
-* **Future-Proofing:** With the introduction of features like Claude Code Teams, where agents are generated dynamically on the fly, static agent files become less relevant. By focusing our hiring process on robust, highly specific skills, we ensure that no matter how the agent team is formed, they have the exact knowledge required to execute the task.
+## 3. Skills Carry Knowledge, Agents Carry Orchestration
+Skills and agents serve fundamentally different purposes in the AWOS Recruitment ecosystem.
+
+**Skills** are small, focused knowledge pieces — best practices, code examples, and standards for a specific language, library, framework, or database. The general-purpose agent is sufficient for most coding tasks; skills are how you fine-tune its output within your standards. A Python skill teaches idiomatic patterns, a Terraform skill enforces module conventions, a ChromaDB skill provides up-to-date API usage. Skills carry the *what* — the concrete knowledge the AI needs to write better code.
+
+**Agents** play an infrastructure role. They exist for context management, parallel processing, and behavioral constraints — not for carrying domain knowledge. An agent's system prompt defines *how* it should operate: what it can and cannot do, how it interacts with the codebase, and what boundaries it must respect. For example, a tester agent might be restricted from reading source code so it remains unbiased and tests only through the public interface.
+
+This separation keeps the registry clean and composable. Skills are reusable across any agent configuration. Agents are lightweight orchestration wrappers that reference the skills they need. As features like Claude Code Teams evolve — where agents are generated dynamically — this distinction becomes even more important: the knowledge lives in skills, and any agent can pick up exactly what it needs.
 
 ## 4. Dynamic Discovery via MCP
 We utilize a remote Model Context Protocol (MCP) server as the intelligent discovery layer for the hiring process. 

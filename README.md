@@ -1,12 +1,22 @@
+![AWOS Recruitment](docs/media/cover.png)
+
 # AWOS Recruitment
 
-A zero-setup, intelligent discovery engine for AI coding assistant capabilities — skills, agents, and tools.
+A curated registry of Claude Code skills, agents, and tools with a smart search MCP server. The Provectus Way of assembling AI capabilities for your project.
 
-AI assistants (like Claude Code) connect to the AWOS Recruitment MCP server to search for and install specialized capabilities matching their developer's needs, without manual setup or dependency management.
+Connect the MCP server to Claude Code, search for capabilities using natural language, and install them into your project with a single command.
 
-## Connect from Claude Code
+> **Works best with [AWOS](https://github.com/provectus/awos)** — the AI Workflow Orchestration System for spec-driven development. AWOS drives the SDLC pipeline from spec to implementation; Recruitment provisions the right skills, agents, and tools for each task. Use the built-in `/awos:hire` command to fully automate capability provisioning — it searches, selects, and installs everything your project needs in one step.
 
-Add the hosted server to your MCP configuration:
+## Connect MCP
+
+**Claude Code CLI:**
+
+```bash
+claude mcp add awos-recruitment --transport streamable-http https://recruitment.awos.provectus.pro/mcp
+```
+
+**Or add to `.mcp.json` manually:**
 
 ```json
 {
@@ -19,49 +29,34 @@ Add the hosted server to your MCP configuration:
 }
 ```
 
-For local development, use `http://localhost:8000/mcp` instead (see [Development Guide](docs/DEVELOPMENT.md)).
+Once connected, Claude Code gains access to the `search_capabilities` tool — search the registry using natural language with an optional type filter (`skill`, `agent`, `tool`).
 
-## MCP Tools
+## CLI
 
-| Tool | Description |
-|---|---|
-| `search_capabilities` | Search the capability registry using natural language. Returns ranked results with name, description, and relevance score (0–100). Supports optional `type` filter (`skill`, `agent`, `tool`). |
-
-## Install Capabilities
-
-Once connected, install discovered capabilities directly into your project:
+Install discovered capabilities directly into your project:
 
 ```bash
-# Install a skill
-npx awos skill modern-python-development
-
-# Install an MCP server definition
-npx awos mcp context7
-
-# Install an agent (also auto-installs its referenced skills)
-npx awos agent test-agent
-
-# Install multiple at once
-npx awos skill modern-python-development typescript-development
-npx awos mcp context7 playwright
-npx awos agent test-agent another-agent
+npx @provectusinc/awos-recruitment <command> <names...>
 ```
 
-## Quick Start
+| Command | Description |
+|---------|-------------|
+| `skill <names...>` | Install skills into `.claude/skills/` |
+| `mcp <names...>` | Install MCP server definitions into `.mcp.json` |
+| `agent <names...>` | Install agents into `.claude/agents/` (auto-installs referenced skills) |
+
+Examples:
 
 ```bash
-just serve
+npx @provectusinc/awos-recruitment skill modern-python-development
+npx @provectusinc/awos-recruitment mcp context7 playwright
+npx @provectusinc/awos-recruitment agent test-agent
 ```
-
-The server starts on `http://0.0.0.0:8000` with:
-- **MCP endpoint:** `POST /mcp` (Streamable HTTP)
-- **Health check:** `GET /health`
-- **Bundle endpoints:** `POST /bundle/skills`, `POST /bundle/mcp`, `POST /bundle/agents`
 
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
-| [Development Guide](docs/DEVELOPMENT.md) | Prerequisites, setup, commands, project structure, and AWOS workflow |
-| [Contributing to the Registry](docs/CONTRIBUTING.md) | How to add skills and MCP definitions to the capability registry |
+| [Development Guide](docs/DEVELOPMENT.md) | Prerequisites, setup, commands, and project structure |
+| [Contributing to the Registry](docs/CONTRIBUTING.md) | How to add skills, MCP definitions, and agents |
 | [Philosophy](docs/PHILOSOPHY.md) | Why "Recruitment" and the vision behind the project |
