@@ -86,6 +86,42 @@ def resolve_mcp_paths(
     return found, not_found
 
 
+def resolve_agent_paths(
+    names: list[str],
+    registry_path: str | Path,
+) -> tuple[list[Path], list[str]]:
+    """Resolve agent names to their Markdown file paths under *registry_path*.
+
+    For each name in *names*, checks whether ``agents/<name>.md`` exists as a
+    file under the registry root.  Names that resolve to an existing file are
+    collected into the first element of the returned tuple; names that do not
+    match any file end up in the second element.
+
+    Args:
+        names: Agent names to look up (without the ``.md`` suffix).
+        registry_path: Root directory of the registry.
+
+    Returns:
+        A ``(found_paths, not_found)`` tuple where *found_paths* is a list of
+        :class:`~pathlib.Path` objects pointing to the matched Markdown files
+        and *not_found* is a list of names with no corresponding file.
+    """
+    root = Path(registry_path)
+    agents_dir = root / "agents"
+
+    found: list[Path] = []
+    not_found: list[str] = []
+
+    for name in names:
+        md_path = agents_dir / f"{name}.md"
+        if md_path.is_file():
+            found.append(md_path)
+        else:
+            not_found.append(name)
+
+    return found, not_found
+
+
 def load_registry(registry_path: str | Path) -> list[RegistryCapability]:
     """Load all capabilities from the registry at *registry_path*.
 
