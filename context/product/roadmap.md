@@ -40,10 +40,10 @@ _Once the registry is live, add semantic search and zero-friction installation._
 
 _Deploy the MCP server to AWS so it's accessible as a hosted service._
 
-- [ ] **MCP Deployment on AWS**
-  - [ ] **AWS Infrastructure Provisioning:** Set up the compute, networking, and storage resources needed to run the MCP server in AWS.
-  - [ ] **Server Deployment:** Deploy the MCP server to AWS and verify it is reachable and functional from external clients.
-  - [ ] **Environment Configuration:** Manage environment-specific configuration (secrets, environment variables, registry path) for the hosted deployment.
+- [x] **MCP Deployment on AWS**
+  - [x] **AWS Infrastructure Provisioning:** Set up the compute, networking, and storage resources needed to run the MCP server in AWS.
+  - [x] **Server Deployment:** Deploy the MCP server to AWS and verify it is reachable and functional from external clients.
+  - [x] **Environment Configuration:** Manage environment-specific configuration (secrets, environment variables, registry path) for the hosted deployment.
 
 ---
 

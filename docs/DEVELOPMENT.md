@@ -9,6 +9,9 @@
 | [Node.js](https://nodejs.org/) | 20+ | CLI runtime |
 | [npm](https://www.npmjs.com/) | 10+ | CLI package manager |
 | [just](https://github.com/casey/just) | latest | Command runner |
+| [Docker](https://www.docker.com/) | latest | Container builds for deployment |
+| [Terraform](https://www.terraform.io/) | 1.9+ | Infrastructure provisioning (AWS) |
+| [AWS CLI](https://aws.amazon.com/cli/) | 2.x | AWS authentication and ECS deployments |
 
 ## Getting Started
 
@@ -87,6 +90,16 @@ awos-recruitment/
 │   │   └── lib/             # download, json-merge, frontmatter, errors, types
 │   ├── package.json
 │   └── tsconfig.json
+├── infra/               # Terraform infrastructure (AWS ECS, ALB, VPC)
+│   ├── providers.tf         # AWS provider, backend config
+│   ├── vpc.tf               # VPC, subnets, NAT gateway
+│   ├── ecs.tf               # ECS cluster, service, task definition
+│   ├── alb.tf               # Application Load Balancer, listeners
+│   ├── acm.tf               # ACM certificate, DNS validation
+│   ├── dns.tf               # Route 53 DNS record
+│   ├── ecr.tf               # ECR repository
+│   ├── ssm.tf               # SSM Parameter Store config
+│   └── ...                  # security_groups.tf, logs.tf, variables.tf, outputs.tf
 ├── context/             # Product docs, specs, and roadmap
 │   ├── product/             # Product definition, architecture, roadmap
 │   └── spec/                # Feature specifications
@@ -149,7 +162,11 @@ context/spec/
 │   ├── functional-spec.md
 │   ├── technical-considerations.md
 │   └── tasks.md
-└── 005-agent-support/                    # Completed
+├── 005-agent-support/                    # Completed
+│   ├── functional-spec.md
+│   ├── technical-considerations.md
+│   └── tasks.md
+└── 006-mcp-deployment/                  # Completed
     ├── functional-spec.md
     ├── technical-considerations.md
     └── tasks.md

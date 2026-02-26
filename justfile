@@ -28,11 +28,11 @@ deploy account_id region="us-east-1":
     set -euo pipefail
 
     IMAGE="awos-recruitment-mcp"
-    ECR_URL="{{account_id}}.dkr.ecr.{{region}}.amazonaws.com/{{IMAGE}}"
+    ECR_URL="{{account_id}}.dkr.ecr.{{region}}.amazonaws.com/$IMAGE"
     SHA="$(git rev-parse --short HEAD)"
 
     echo "Building image..."
-    docker build -t "$IMAGE" -f server/Dockerfile .
+    docker build --platform linux/amd64 -t "$IMAGE" -f server/Dockerfile .
 
     echo "Tagging $ECR_URL:$SHA and $ECR_URL:latest..."
     docker tag "$IMAGE" "$ECR_URL:$SHA"
@@ -53,5 +53,11 @@ deploy account_id region="us-east-1":
         --service awos-recruitment-mcp \
         --force-new-deployment \
         --no-cli-pager
+
+    echo "Waiting for deployment to stabilize..."
+    aws ecs wait services-stable \
+        --region {{region}} \
+        --cluster awos-recruitment \
+        --services awos-recruitment-mcp
 
     echo "Deploy complete (image: $SHA)"

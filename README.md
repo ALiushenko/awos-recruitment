@@ -6,18 +6,20 @@ AI assistants (like Claude Code) connect to the AWOS Recruitment MCP server to s
 
 ## Connect from Claude Code
 
-Add the server to your MCP configuration:
+Add the hosted server to your MCP configuration:
 
 ```json
 {
   "mcpServers": {
     "awos-recruitment": {
       "type": "url",
-      "url": "http://localhost:8000/mcp"
+      "url": "https://recruitment.awos.provectus.pro/mcp"
     }
   }
 }
 ```
+
+For local development, use `http://localhost:8000/mcp` instead (see [Development Guide](docs/DEVELOPMENT.md)).
 
 ## MCP Tools
 
