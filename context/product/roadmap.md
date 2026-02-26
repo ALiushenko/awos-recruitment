@@ -30,6 +30,10 @@ _Once the registry is live, add semantic search and zero-friction installation._
   - [x] **Install Discovered Skills:** Install discovered skills into the user's Claude Code configuration via an npx package.
   - [x] **Install MCP Server Definitions:** Install discovered MCP server definitions into the user's `.mcp.json` via an npx package.
 
+- [ ] **Agent Support**
+  - [ ] **Agent Registry & Indexing:** Index and serve agent definitions with structured metadata, enabling agents to be discovered alongside skills and MCP servers.
+  - [ ] **Agent Installation:** Install discovered agents into the user's Claude Code configuration via the npx package.
+
 ---
 
 ### Phase 3
