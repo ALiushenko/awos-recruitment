@@ -89,13 +89,16 @@ def resolve_mcp_paths(
 def load_registry(registry_path: str | Path) -> list[RegistryCapability]:
     """Load all capabilities from the registry at *registry_path*.
 
-    Scans two sub-trees:
+    Scans three sub-trees:
 
     * ``skills/*/SKILL.md`` -- YAML front matter is parsed with
       *python-frontmatter*; each entry becomes a capability with
       ``type="skill"``.
     * ``mcp/*.yaml`` -- flat YAML files parsed with *pyyaml*; each entry
       becomes a capability with ``type="tool"``.
+    * ``agents/*.md`` -- YAML front matter is parsed with
+      *python-frontmatter*; each entry becomes a capability with
+      ``type="agent"``.
 
     Entries that have no ``description`` (or an empty/whitespace-only
     description) are silently skipped.
@@ -111,6 +114,7 @@ def load_registry(registry_path: str | Path) -> list[RegistryCapability]:
 
     capabilities.extend(_load_skills(root))
     capabilities.extend(_load_mcp_tools(root))
+    capabilities.extend(_load_agents(root))
 
     return capabilities
 
@@ -192,6 +196,44 @@ def _load_mcp_tools(root: Path) -> list[RegistryCapability]:
                 name=name,
                 description=description,
                 type="tool",
+            )
+        )
+
+    return results
+
+
+def _load_agents(root: Path) -> list[RegistryCapability]:
+    """Parse ``agents/*.md`` files and return agent capabilities."""
+    agents_dir = root / "agents"
+    results: list[RegistryCapability] = []
+
+    if not agents_dir.is_dir():
+        return results
+
+    for md_file in sorted(agents_dir.iterdir()):
+        if not md_file.is_file() or md_file.suffix != ".md":
+            continue
+
+        try:
+            post = frontmatter.load(str(md_file))
+        except Exception:
+            logger.warning("Failed to parse front matter in %s", md_file)
+            continue
+
+        metadata: dict = dict(post.metadata)
+        name = metadata.get("name")
+        description = metadata.get("description")
+
+        if not name or not isinstance(name, str):
+            continue
+        if not description or not isinstance(description, str) or not description.strip():
+            continue
+
+        results.append(
+            RegistryCapability(
+                name=name,
+                description=description,
+                type="agent",
             )
         )
 
