@@ -1,0 +1,10 @@
+node_modules
+.git
+__pycache__
+.venv
+cli/
+context/
+docs/
+infra/
+*.pyc
+.env
