@@ -32,7 +32,7 @@ function makeTempDir(prefix: string): string {
   return dir;
 }
 
-/** Sample agent markdown content. */
+/** Sample agent markdown content (with skills). */
 const agentMarkdown = `---
 name: code-reviewer
 description: Reviews code for best practices
@@ -45,6 +45,45 @@ skills:
 
 You are a code review agent.
 `;
+
+/** Agent markdown that references two skills. */
+const agentWithTwoSkills = `---
+name: full-stack-dev
+description: Full stack development agent
+skills:
+  - skill-a
+  - skill-b
+---
+
+# Full Stack Dev
+
+You are a full stack development agent.
+`;
+
+/** Agent markdown with no skills field. */
+const agentNoSkills = `---
+name: simple-agent
+description: An agent with no skills
+---
+
+# Simple Agent
+
+You are a simple agent.
+`;
+
+/**
+ * Helper: create a skill directory inside a temp dir,
+ * simulating an extracted skill bundle entry.
+ */
+function createSkillInDir(dir: string, skillName: string): void {
+  const skillDir = path.join(dir, skillName);
+  fs.mkdirSync(skillDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(skillDir, "SKILL.md"),
+    `# ${skillName}`,
+    "utf-8",
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Setup / teardown
@@ -87,7 +126,14 @@ describe("installAgents", () => {
       "utf-8",
     );
 
-    mockDownloadBundle.mockResolvedValue(bundleDir);
+    // The agent frontmatter references the "typescript" skill, so
+    // Phase 2 will attempt a second downloadBundle call for skills.
+    const skillBundleDir = makeTempDir("skill-bundle-");
+    createSkillInDir(skillBundleDir, "typescript");
+
+    mockDownloadBundle
+      .mockResolvedValueOnce(bundleDir)
+      .mockResolvedValueOnce(skillBundleDir);
 
     // Prepare a fake cwd.
     const fakeCwd = makeTempDir("agent-cwd-");
@@ -250,5 +296,259 @@ describe("installAgents", () => {
         "utf-8",
       ),
     ).toBe("# My Agent");
+  });
+
+  // =======================================================================
+  // Phase 2: Auto-install referenced skills
+  // =======================================================================
+
+  // -----------------------------------------------------------------------
+  // 6. Skills auto-installed from frontmatter
+  // -----------------------------------------------------------------------
+  it("auto-installs skills referenced in agent frontmatter", async () => {
+    // First call: agent bundle with an agent referencing two skills.
+    const agentBundleDir = makeTempDir("agent-bundle-");
+    fs.writeFileSync(
+      path.join(agentBundleDir, "full-stack-dev.md"),
+      agentWithTwoSkills,
+      "utf-8",
+    );
+
+    // Second call: skill bundle with both skills.
+    const skillBundleDir = makeTempDir("skill-bundle-");
+    createSkillInDir(skillBundleDir, "skill-a");
+    createSkillInDir(skillBundleDir, "skill-b");
+
+    mockDownloadBundle
+      .mockResolvedValueOnce(agentBundleDir)
+      .mockResolvedValueOnce(skillBundleDir);
+
+    const fakeCwd = makeTempDir("agent-cwd-");
+    vi.spyOn(process, "cwd").mockReturnValue(fakeCwd);
+
+    await installAgents(["full-stack-dev"]);
+
+    // Agent should be installed.
+    const agentFile = path.join(
+      fakeCwd,
+      ".claude",
+      "agents",
+      "full-stack-dev.md",
+    );
+    expect(fs.existsSync(agentFile)).toBe(true);
+
+    // Both skills should be installed.
+    const skillAFile = path.join(
+      fakeCwd,
+      ".claude",
+      "skills",
+      "skill-a",
+      "SKILL.md",
+    );
+    const skillBFile = path.join(
+      fakeCwd,
+      ".claude",
+      "skills",
+      "skill-b",
+      "SKILL.md",
+    );
+    expect(fs.existsSync(skillAFile)).toBe(true);
+    expect(fs.existsSync(skillBFile)).toBe(true);
+
+    // downloadBundle should have been called twice: once for agents, once for skills.
+    expect(mockDownloadBundle).toHaveBeenCalledTimes(2);
+    expect(mockDownloadBundle).toHaveBeenNthCalledWith(
+      1,
+      expect.stringContaining("/bundle/agents"),
+      ["full-stack-dev"],
+    );
+    expect(mockDownloadBundle).toHaveBeenNthCalledWith(
+      2,
+      expect.stringContaining("/bundle/skills"),
+      expect.arrayContaining(["skill-a", "skill-b"]),
+    );
+
+    // Skills section header should be printed.
+    expect(process.stdout.write).toHaveBeenCalledWith(
+      "\nSkills (auto-installed):\n",
+    );
+
+    // No exit(1) -- everything succeeded.
+    expect(process.exit).not.toHaveBeenCalled();
+  });
+
+  // -----------------------------------------------------------------------
+  // 7. Existing skills are skipped
+  // -----------------------------------------------------------------------
+  it("skips skills that already exist locally", async () => {
+    // Agent bundle with an agent referencing skill-a.
+    const agentBundleDir = makeTempDir("agent-bundle-");
+    const agentWithOneSkill = `---
+name: my-agent
+description: A test agent
+skills:
+  - skill-a
+---
+
+# My Agent
+`;
+    fs.writeFileSync(
+      path.join(agentBundleDir, "my-agent.md"),
+      agentWithOneSkill,
+      "utf-8",
+    );
+
+    mockDownloadBundle.mockResolvedValueOnce(agentBundleDir);
+
+    // Pre-create skill-a in the fake cwd.
+    const fakeCwd = makeTempDir("agent-cwd-");
+    const existingSkillDir = path.join(
+      fakeCwd,
+      ".claude",
+      "skills",
+      "skill-a",
+    );
+    fs.mkdirSync(existingSkillDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(existingSkillDir, "SKILL.md"),
+      "# Existing skill-a",
+      "utf-8",
+    );
+
+    vi.spyOn(process, "cwd").mockReturnValue(fakeCwd);
+
+    await installAgents(["my-agent"]);
+
+    // downloadBundle should have been called only once (for agents).
+    // No second call for skills since all are already present.
+    expect(mockDownloadBundle).toHaveBeenCalledTimes(1);
+
+    // Existing skill should be untouched.
+    expect(
+      fs.readFileSync(
+        path.join(existingSkillDir, "SKILL.md"),
+        "utf-8",
+      ),
+    ).toBe("# Existing skill-a");
+
+    // Skills section should still be printed (with skipped info).
+    expect(process.stdout.write).toHaveBeenCalledWith(
+      "\nSkills (auto-installed):\n",
+    );
+
+    // No exit(1).
+    expect(process.exit).not.toHaveBeenCalled();
+  });
+
+  // -----------------------------------------------------------------------
+  // 8. All skills already present -- no HTTP call for skills
+  // -----------------------------------------------------------------------
+  it("does not download skills when all referenced skills already exist", async () => {
+    // Agent referencing skill-a and skill-b, both already present.
+    const agentBundleDir = makeTempDir("agent-bundle-");
+    fs.writeFileSync(
+      path.join(agentBundleDir, "full-stack-dev.md"),
+      agentWithTwoSkills,
+      "utf-8",
+    );
+
+    mockDownloadBundle.mockResolvedValueOnce(agentBundleDir);
+
+    const fakeCwd = makeTempDir("agent-cwd-");
+    // Pre-create both skills.
+    for (const skill of ["skill-a", "skill-b"]) {
+      const skillDir = path.join(
+        fakeCwd,
+        ".claude",
+        "skills",
+        skill,
+      );
+      fs.mkdirSync(skillDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(skillDir, "SKILL.md"),
+        `# ${skill}`,
+        "utf-8",
+      );
+    }
+
+    vi.spyOn(process, "cwd").mockReturnValue(fakeCwd);
+
+    await installAgents(["full-stack-dev"]);
+
+    // Only one downloadBundle call (for agents), none for skills.
+    expect(mockDownloadBundle).toHaveBeenCalledTimes(1);
+
+    // No exit(1).
+    expect(process.exit).not.toHaveBeenCalled();
+  });
+
+  // -----------------------------------------------------------------------
+  // 9. No skills referenced -- no skills section in output
+  // -----------------------------------------------------------------------
+  it("does not print skills section when agent has no skills field", async () => {
+    const agentBundleDir = makeTempDir("agent-bundle-");
+    fs.writeFileSync(
+      path.join(agentBundleDir, "simple-agent.md"),
+      agentNoSkills,
+      "utf-8",
+    );
+
+    mockDownloadBundle.mockResolvedValueOnce(agentBundleDir);
+
+    const fakeCwd = makeTempDir("agent-cwd-");
+    vi.spyOn(process, "cwd").mockReturnValue(fakeCwd);
+
+    await installAgents(["simple-agent"]);
+
+    // Only one downloadBundle call (for agents).
+    expect(mockDownloadBundle).toHaveBeenCalledTimes(1);
+
+    // Skills header should NOT be printed.
+    expect(process.stdout.write).not.toHaveBeenCalledWith(
+      "\nSkills (auto-installed):\n",
+    );
+
+    // No exit(1).
+    expect(process.exit).not.toHaveBeenCalled();
+  });
+
+  // -----------------------------------------------------------------------
+  // 10. Referenced skill not found in registry
+  // -----------------------------------------------------------------------
+  it("reports not-found and exits 1 when a referenced skill is missing from the registry", async () => {
+    // Agent references skill-a, but the skill bundle doesn't contain it.
+    const agentBundleDir = makeTempDir("agent-bundle-");
+    const agentWithOneSkill = `---
+name: my-agent
+description: A test agent
+skills:
+  - skill-a
+---
+
+# My Agent
+`;
+    fs.writeFileSync(
+      path.join(agentBundleDir, "my-agent.md"),
+      agentWithOneSkill,
+      "utf-8",
+    );
+
+    // Empty skill bundle -- skill-a is not there.
+    const skillBundleDir = makeTempDir("skill-bundle-");
+
+    mockDownloadBundle
+      .mockResolvedValueOnce(agentBundleDir)
+      .mockResolvedValueOnce(skillBundleDir);
+
+    const fakeCwd = makeTempDir("agent-cwd-");
+    vi.spyOn(process, "cwd").mockReturnValue(fakeCwd);
+
+    await installAgents(["my-agent"]);
+
+    // Should exit(1) because a referenced skill was not found.
+    expect(process.exit).toHaveBeenCalledWith(1);
+
+    // downloadBundle should have been called twice.
+    expect(mockDownloadBundle).toHaveBeenCalledTimes(2);
   });
 });
