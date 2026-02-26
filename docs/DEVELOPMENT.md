@@ -65,20 +65,21 @@ awos-recruitment/
 │   │   ├── config.py        # Config from env vars
 │   │   ├── registry.py      # Registry loader (scans and parses capabilities)
 │   │   ├── search_index.py  # ChromaDB search index (build + query)
-│   │   ├── models/          # Pydantic models (capabilities, skills, MCP defs)
+│   │   ├── models/          # Pydantic models (capabilities, skills, MCP defs, agents)
 │   │   ├── tools/           # MCP tool implementations
 │   │   └── validate/        # Registry validation CLI
 │   ├── tests/               # pytest test suite
 │   └── pyproject.toml       # Dependencies and project config
 ├── registry/            # Git-managed capability catalog
 │   ├── skills/              # Claude Code skill definitions
-│   └── mcp/                 # MCP server definitions
+│   ├── mcp/                 # MCP server definitions
+│   └── agents/              # Claude Code agent definitions
 ├── cli/                 # TypeScript npx package for capability installation
 │   ├── src/
 │   │   ├── index.ts         # Entry point with error boundary
 │   │   ├── cli.ts           # Argument parsing and subcommand routing
-│   │   ├── commands/        # skill and mcp install commands
-│   │   └── lib/             # download, json-merge, errors, types
+│   │   ├── commands/        # skill, mcp, and agent install commands
+│   │   └── lib/             # download, json-merge, frontmatter, errors, types
 │   ├── package.json
 │   └── tsconfig.json
 ├── context/             # Product docs, specs, and roadmap
@@ -139,7 +140,11 @@ context/spec/
 │   ├── functional-spec.md
 │   ├── technical-considerations.md
 │   └── tasks.md
-└── 004-capability-installation/           # Completed
+├── 004-capability-installation/           # Completed
+│   ├── functional-spec.md
+│   ├── technical-considerations.md
+│   └── tasks.md
+└── 005-agent-support/                    # Completed
     ├── functional-spec.md
     ├── technical-considerations.md
     └── tasks.md

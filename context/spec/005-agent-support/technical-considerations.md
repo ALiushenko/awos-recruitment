@@ -1,7 +1,7 @@
 # Technical Specification: Agent Support
 
 - **Functional Specification:** `context/spec/005-agent-support/functional-spec.md`
-- **Status:** Draft
+- **Status:** Completed
 - **Author(s):** Technical Architect
 
 ---

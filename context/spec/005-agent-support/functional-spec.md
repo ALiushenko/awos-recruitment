@@ -1,7 +1,7 @@
 # Functional Specification: Agent Support
 
 - **Roadmap Item:** Support agents in the registry and installer — index and serve agent definitions with structured metadata, and install discovered agents into the user's Claude Code configuration.
-- **Status:** Draft
+- **Status:** Completed
 - **Author:** Poe (Product Analyst)
 
 ---
@@ -36,10 +36,10 @@ This feature closes that gap by extending the existing capability pipeline to su
 - The existing `type="agent"` filter on the search tool must return matching agents.
 
   **Acceptance Criteria:**
-  - [ ] Agent `.md` files placed in `registry/agents/` are loaded by the registry loader with `type="agent"`.
-  - [ ] Agents appear in semantic search results when a relevant natural language query is submitted.
-  - [ ] Filtering by `type="agent"` returns only agent results.
-  - [ ] Agents without a description are silently skipped during loading (consistent with skills).
+  - [x] Agent `.md` files placed in `registry/agents/` are loaded by the registry loader with `type="agent"`.
+  - [x] Agents appear in semantic search results when a relevant natural language query is submitted.
+  - [x] Filtering by `type="agent"` returns only agent results.
+  - [x] Agents without a description are silently skipped during loading (consistent with skills).
 
 ### 2.2. Agent Metadata Validation
 
@@ -48,10 +48,10 @@ This feature closes that gap by extending the existing capability pipeline to su
 - Validation behavior must be consistent with the existing skill and MCP validation pipeline.
 
   **Acceptance Criteria:**
-  - [ ] A valid agent file (correct frontmatter, non-empty description, kebab-case name) passes CI validation.
-  - [ ] An agent file with a missing `name` field fails CI validation.
-  - [ ] An agent file with an empty `description` field fails CI validation.
-  - [ ] An agent file with a non-kebab-case name fails CI validation.
+  - [x] A valid agent file (correct frontmatter, non-empty description, kebab-case name) passes CI validation.
+  - [x] An agent file with a missing `name` field fails CI validation.
+  - [x] An agent file with an empty `description` field fails CI validation.
+  - [x] An agent file with a non-kebab-case name fails CI validation.
 
 ### 2.3. Agent Bundling
 
@@ -60,9 +60,9 @@ This feature closes that gap by extending the existing capability pipeline to su
 - If a requested agent is not found in the registry, it is excluded from the archive (not an error), and the CLI handles reporting.
 
   **Acceptance Criteria:**
-  - [ ] `POST /bundle/agents` with valid agent names returns a tar.gz archive containing the requested `.md` files.
-  - [ ] Requesting a non-existent agent name does not cause a server error; the name is simply absent from the archive.
-  - [ ] The request is rejected if it contains more than 20 names or names with invalid format.
+  - [x] `POST /bundle/agents` with valid agent names returns a tar.gz archive containing the requested `.md` files.
+  - [x] Requesting a non-existent agent name does not cause a server error; the name is simply absent from the archive.
+  - [x] The request is rejected if it contains more than 20 names or names with invalid format.
 
 ### 2.4. Agent Installation via CLI
 
@@ -81,12 +81,12 @@ This feature closes that gap by extending the existing capability pipeline to su
   - Items not found in the registry.
 
   **Acceptance Criteria:**
-  - [ ] Running `npx @provectusinc/awos-recruitment agent typescript-expert` installs the agent file to `.claude/agents/typescript-expert.md`.
-  - [ ] If `.claude/agents/typescript-expert.md` already exists, the agent is skipped without error.
-  - [ ] If the installed agent references skills `[typescript, npx-package]` and `typescript` already exists locally, only `npx-package` is installed.
-  - [ ] If the installed agent references skills `[typescript, npx-package]` and both already exist locally, no skills are installed and the summary reflects this.
-  - [ ] If a requested agent name does not exist in the registry, it is reported as "not found" in the summary.
-  - [ ] The `.claude/agents/` directory is created if it does not already exist.
+  - [x] Running `npx @provectusinc/awos-recruitment agent typescript-expert` installs the agent file to `.claude/agents/typescript-expert.md`.
+  - [x] If `.claude/agents/typescript-expert.md` already exists, the agent is skipped without error.
+  - [x] If the installed agent references skills `[typescript, npx-package]` and `typescript` already exists locally, only `npx-package` is installed.
+  - [x] If the installed agent references skills `[typescript, npx-package]` and both already exist locally, no skills are installed and the summary reflects this.
+  - [x] If a requested agent name does not exist in the registry, it is reported as "not found" in the summary.
+  - [x] The `.claude/agents/` directory is created if it does not already exist.
 
 ---
 
