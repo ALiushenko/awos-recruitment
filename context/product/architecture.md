@@ -20,8 +20,12 @@
 
 ## 3. Infrastructure & Deployment
 
-- **Hosting:** TBD (deferred — no deployment decisions for v1)
-- **Registry Sync:** Capability registry is baked into the server; updates are part of the CI/CD build process
+- **Cloud Provider:** AWS
+- **Compute:** ECS Fargate — serverless containers running the MCP server as a long-running service
+- **Container:** Docker image with the Python server and sentence-transformers model bundled in
+- **Infrastructure-as-Code:** Terraform
+- **Configuration & Secrets:** AWS SSM Parameter Store for environment-specific config and secrets, injected into ECS task definitions at runtime
+- **Registry Sync:** Capability registry is baked into the Docker image; updates are part of the build process
 
 ---
 

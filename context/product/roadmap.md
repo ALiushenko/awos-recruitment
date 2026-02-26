@@ -38,7 +38,18 @@ _Once the registry is live, add semantic search and zero-friction installation._
 
 ### Phase 3
 
-_With discovery and installation working, add visibility into real-world usage patterns._
+_Deploy the MCP server to AWS so it's accessible as a hosted service._
+
+- [ ] **MCP Deployment on AWS**
+  - [ ] **AWS Infrastructure Provisioning:** Set up the compute, networking, and storage resources needed to run the MCP server in AWS.
+  - [ ] **Server Deployment:** Deploy the MCP server to AWS and verify it is reachable and functional from external clients.
+  - [ ] **Environment Configuration:** Manage environment-specific configuration (secrets, environment variables, registry path) for the hosted deployment.
+
+---
+
+### Phase 4
+
+_With the server deployed, add visibility into real-world usage patterns._
 
 - [ ] **Usage Telemetry**
   - [ ] **Event Tracking:** Log key events — what was searched, what was returned, what was selected, and what was installed.
