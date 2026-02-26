@@ -4,9 +4,16 @@ This guide explains how to add new capabilities to the AWOS Recruitment registry
 
 The registry contains three types of capabilities:
 
-- **Skills** — Claude Code skill definitions (YAML front matter + markdown instructions)
+- **Skills** — best practices, code examples, and standards for a specific language, library, framework, or database
 - **MCP Definitions** — MCP server configurations ready to be inserted into `.mcp.json`
-- **Agents** — Claude Code agent definitions (YAML front matter + system prompt)
+- **Agents** — behavioral rules and constraints for specialized roles
+
+**When to create a skill vs. an agent:**
+
+- Create a **skill** when you want to teach the AI best practices, code examples, or standards for a specific language, library, framework, or database
+- Create an **agent** when you need to enforce behavioral rules — for example, restrict a tester agent from reading source code so it stays unbiased
+
+See [Philosophy](PHILOSOPHY.md) for the reasoning behind this distinction.
 
 ---
 
