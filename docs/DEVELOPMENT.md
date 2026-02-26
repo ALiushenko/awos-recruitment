@@ -44,6 +44,8 @@ All commands run from the **repository root** via `just`:
 | `just publish-cli` | Bump patch version and publish CLI to npm |
 | `just publish-cli minor` | Bump minor version and publish |
 | `just publish-cli major` | Bump major version and publish |
+| `just deploy <account_id>` | Build, push to ECR, and redeploy to ECS (us-east-1 by default) |
+| `just deploy <account_id> eu-west-1` | Deploy to a specific region |
 
 ## Server Configuration
 
