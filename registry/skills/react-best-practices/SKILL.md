@@ -5,17 +5,7 @@ description: React performance optimization guidelines. This skill should be use
 
 # React Best Practices
 
-Comprehensive performance optimization guide for React applications. Contains 38 rules across 7 categories, prioritized by impact to guide automated refactoring and code generation.
-
-## When to Apply
-
-Reference these guidelines when:
-
-- Writing new React components
-- Implementing client-side data fetching
-- Reviewing code for performance issues
-- Refactoring existing React code
-- Optimizing bundle size or load times
+Comprehensive performance optimization guide for React applications. Contains 38 rules across 7 categories, prioritized by impact.
 
 ## Rule Categories by Priority
 
@@ -92,20 +82,4 @@ Reference these guidelines when:
 
 ## How to Use
 
-Read individual rule files for detailed explanations and code examples:
-
-```
-rules/async-parallel.md
-rules/bundle-barrel-imports.md
-```
-
-Each rule file contains:
-
-- Brief explanation of why it matters
-- Incorrect code example with explanation
-- Correct code example with explanation
-- Additional context and references
-
-## Full Compiled Document
-
-For the complete guide with all rules expanded: `AGENTS.md`
+Each rule file in `rules/` contains: explanation, incorrect/correct code examples, and context. Read individual files as needed.
