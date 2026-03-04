@@ -52,6 +52,7 @@ Backend interaction layer (typically TanStack Query or SWR hooks):
 
 File conventions:
 - One file per resource or operation
+- DTOs and request/response shapes can live in a dedicated `types.ts` inside `api/`
 - `index.ts` re-exports all public items
 
 ---
@@ -63,6 +64,7 @@ Pure helper functions and generic utility hooks:
 - Pure functions — no side effects, no domain dependencies
 - Utility hooks — generic, not tied to business logic (`useDebounce`, `useToggle`, `useMediaQuery`)
 - Formatters, validators, mappers
+- Utility types and generic type helpers can live in a dedicated `types.ts` inside `lib/`
 - File in kebab-case → function in camelCase
 - `index.ts` re-exports all utilities
 

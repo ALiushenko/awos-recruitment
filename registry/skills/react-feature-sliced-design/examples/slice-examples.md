@@ -16,9 +16,11 @@ Every slice — regardless of layer — follows the same structure.
 │   └── index.ts               # Re-exports all model items
 ├── api/
 │   ├── {resource}.ts          # API calls, TanStack Query hooks
+│   ├── types.ts               # DTOs, request/response shapes
 │   └── index.ts               # Re-exports all API items
 ├── lib/
 │   ├── {helper}.ts            # Pure helpers, utility functions
+│   ├── types.ts               # Utility types, generic type helpers
 │   └── index.ts               # Re-exports all lib items
 ├── config.ts                  # Constants, mappings, defaults
 ├── index.ts                   # PUBLIC API — the only file others import from

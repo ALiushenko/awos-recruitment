@@ -140,4 +140,6 @@ This skill is a React/TypeScript adaptation of Feature-Sliced Design. For the ca
 - **Abridged**: [fsd.how/llms-small.txt](https://fsd.how/llms-small.txt) — compact reference
 - **Complete**: [fsd.how/llms-full.txt](https://fsd.how/llms-full.txt) — full documentation
 
+> **Do NOT fetch these URLs proactively.** Only use `WebFetch` when the engineer explicitly asks for the full FSD specification or you encounter a question this skill doesn't cover.
+
 Consult the official spec when you need details beyond what this skill covers (e.g., migration strategies, advanced decomposition patterns, framework-agnostic rules).
