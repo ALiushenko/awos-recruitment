@@ -114,6 +114,8 @@ This skill is not just a ruleset — it should actively teach engineers FSD prin
 
 **When reviewing code**, check for FSD compliance and suggest corrections with explanations, not just fixes.
 
+**When the project deviates from this guide**, don't treat it as an error automatically. Real projects may have minor differences in naming, segment layout, or file organization — and that's fine as long as there's a clear reason behind it. Ask the engineer for their reasoning before suggesting changes. Consistency within the project matters more than strict compliance with this document.
+
 ## Code Generation Rules
 
 1. Co-locate logic in the owning slice — don't scatter across layers
