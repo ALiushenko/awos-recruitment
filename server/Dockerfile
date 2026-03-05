@@ -18,20 +18,20 @@ COPY server/pyproject.toml server/uv.lock ./
 # lock file does not change.
 RUN uv sync --frozen --no-dev --no-install-project
 
+# Pre-download the sentence-transformers model BEFORE copying source
+# code so that code-only changes do not re-trigger the ~90 MB download.
+ENV HF_HOME=/app/.cache
+RUN .venv/bin/python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+
 # Copy the server source code so uv can build and install the project
 # package into the venv (makes `python -m awos_recruitment_mcp` work).
 COPY server/src/ /app/src/
 
-# Now install the project itself (fast -- deps are already cached).
-# --no-editable ensures the package is installed as a proper wheel
-# rather than a .pth editable link, so the source tree is not needed
-# in the runtime stage.
+# Now install the project itself (fast -- deps and model are already
+# cached).  --no-editable ensures the package is installed as a proper
+# wheel rather than a .pth editable link, so the source tree is not
+# needed in the runtime stage.
 RUN uv sync --frozen --no-dev --no-editable
-
-# Pre-download the sentence-transformers model so the runtime image
-# starts faster and does not require internet access for model weights.
-ENV HF_HOME=/app/.cache
-RUN .venv/bin/python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
 # ---- Runtime stage ----
 # Minimal image with only the venv, cached model, source code, and registry.

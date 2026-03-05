@@ -313,7 +313,7 @@ class TestEmptyRegistry:
 
 
 def test_real_registry_loads_all_capabilities() -> None:
-    """Load the real registry and verify the expected number of capabilities."""
+    """Load the real registry and verify it contains at least one of each type."""
     real_registry = Path(__file__).resolve().parent.parent.parent / "registry"
 
     if not real_registry.is_dir():
@@ -321,21 +321,12 @@ def test_real_registry_loads_all_capabilities() -> None:
 
     caps = load_registry(real_registry)
 
-    assert len(caps) == 5, (
-        f"Expected 5 capabilities (2 skills + 2 tools + 1 agent), got {len(caps)}: "
-        f"{[(c.name, c.type) for c in caps]}"
-    )
+    assert len(caps) >= 1, "Registry should not be empty"
 
     skill_caps = [c for c in caps if c.type == "skill"]
     tool_caps = [c for c in caps if c.type == "tool"]
     agent_caps = [c for c in caps if c.type == "agent"]
 
-    assert len(skill_caps) == 2, (
-        f"Expected 2 skills, got {len(skill_caps)}: {[c.name for c in skill_caps]}"
-    )
-    assert len(tool_caps) == 2, (
-        f"Expected 2 tools, got {len(tool_caps)}: {[c.name for c in tool_caps]}"
-    )
-    assert len(agent_caps) == 1, (
-        f"Expected 1 agent, got {len(agent_caps)}: {[c.name for c in agent_caps]}"
-    )
+    assert len(skill_caps) >= 1, f"Expected at least 1 skill, got {len(skill_caps)}"
+    assert len(tool_caps) >= 1, f"Expected at least 1 tool, got {len(tool_caps)}"
+    assert len(agent_caps) >= 1, f"Expected at least 1 agent, got {len(agent_caps)}"

@@ -9,4 +9,4 @@ from awos_recruitment_mcp.server import mcp
 
 config = Config.from_env()
 
-mcp.run(transport="http", host=config.host, port=config.port)
+mcp.run(transport="http", host=config.host, port=config.port, json_response=True, stateless_http=True)
