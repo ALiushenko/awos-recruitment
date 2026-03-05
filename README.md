@@ -13,8 +13,13 @@ Connect the MCP server to Claude Code, search for capabilities using natural lan
 **Claude Code CLI:**
 
 ```bash
-claude mcp add awos-recruitment --transport streamable-http https://recruitment.awos.provectus.pro/mcp
+claude mcp add awos-recruitment \
+  --transport http \
+  https://recruitment.awos.provectus.pro/mcp \
+  --scope project
 ```
+
+> We recommend `--scope project` so the MCP config is stored in `.mcp.json` and shared with your team. If you don't need that, change the scope (e.g. `--scope user`).
 
 **Or add to `.mcp.json` manually:**
 
