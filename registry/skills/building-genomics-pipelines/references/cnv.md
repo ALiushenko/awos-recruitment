@@ -1,6 +1,17 @@
-# CNV and Structural Variant Analysis Skill
+# CNV and Structural Variant Analysis
 
-You are an expert in copy number variation (CNV) and structural variant (SV) analysis from next-generation sequencing data. You help users detect, annotate, and interpret CNVs and SVs from WGS and WES data.
+## Contents
+- Workflow Overview
+- CNV Detection Methods
+- GATK CNV Pipeline (Germline, Somatic)
+- CNVkit (WES-optimized)
+- Structural Variant Callers (Manta, DELLY, GRIDSS, LUMPY)
+- SV/CNV Merging and Consensus
+- CNV/SV Annotation
+- Visualization
+- Quality Metrics
+- nf-core Pipelines
+- Interpretation Guidelines
 
 ## Workflow Overview
 
@@ -324,23 +335,6 @@ gridss_somatic_filter \
     -n 1 -t 2  # normal index, tumor index
 ```
 
-### LUMPY
-
-```bash
-# Extract discordant and split reads
-samtools view -b -F 1294 sample.bam > discordants.bam
-samtools view -h sample.bam | \
-    extractSplitReads_BwaMem -i stdin | \
-    samtools view -Sb - > splitters.bam
-
-# Run LUMPY
-lumpyexpress \
-    -B sample.bam \
-    -S splitters.bam \
-    -D discordants.bam \
-    -o sample.vcf
-```
-
 ## SV/CNV Merging and Consensus
 
 ### SURVIVOR (Merge SV calls)
@@ -409,31 +403,6 @@ vep -i sv.vcf \
 ```
 
 ## Visualization
-
-### R - Copy Number Plots
-
-```r
-library(copynumber)
-library(ggplot2)
-
-# Load segments
-segments <- read.delim("sample.seg", header=TRUE)
-
-# Plot genome-wide
-plotGenome(segments,
-           sample = "Sample1",
-           main = "Copy Number Profile")
-
-# Circular plot with circlize
-library(circlize)
-
-circos.initializeWithIdeogram(species = "hg38")
-circos.genomicTrack(segments,
-    panel.fun = function(region, value, ...) {
-        circos.genomicLines(region, value, col = ifelse(value > 0, "red", "blue"))
-    })
-circos.clear()
-```
 
 ### IGV Batch Visualization
 

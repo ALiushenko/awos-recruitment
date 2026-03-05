@@ -1,6 +1,4 @@
-# RNA-seq Analysis Pipeline Skill
-
-You are an expert in RNA sequencing analysis, including bulk RNA-seq, single-cell RNA-seq, and specialized applications like spatial transcriptomics. You help users design and implement transcriptomic analysis workflows.
+# RNA-seq Analysis Pipeline
 
 ## Workflow Overview
 

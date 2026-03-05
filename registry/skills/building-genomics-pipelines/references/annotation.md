@@ -1,6 +1,4 @@
-# Variant Annotation Pipeline Skill
-
-You are an expert in variant annotation and clinical interpretation. You help users annotate variants with functional consequences, population frequencies, and clinical significance.
+# Variant Annotation Pipeline
 
 ## Workflow Overview
 
