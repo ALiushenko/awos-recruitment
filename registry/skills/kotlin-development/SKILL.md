@@ -8,6 +8,13 @@ version: 0.1.0
 
 Modern Kotlin best practices for writing concise, safe, and idiomatic code. Targets Kotlin 2.1+ on the JVM — language and stdlib only, no frameworks or libraries.
 
+## Reference Files
+
+- **`references/type-system.md`** — Generics, variance, smart casts, inline/value classes, `Nothing`, SAM conversions
+- **`references/patterns.md`** — Scope functions, sealed hierarchies, delegation, extensions, DSL builders, domain modeling, error handling guide
+- **`references/coroutines.md`** — Flow, StateFlow/SharedFlow, Channels, exception handling, cancellation, testing
+- **`references/project-structure.md`** — `build.gradle.kts`, multi-module, compiler options, testing setup
+
 ## Code Style
 
 - **Short functions** — target under 15 lines. If a block needs a comment to explain it, extract it into a well-named function.
@@ -34,7 +41,7 @@ val name: String? = findUser()?.name   // safe call
 val length = name?.length ?: 0          // elvis — default for null
 ```
 
-**Never use `!!`** to silence the compiler. It crashes at runtime. Acceptable only with a provable invariant and a comment explaining why.
+NEVER use `!!` to silence the compiler — it crashes at runtime. Acceptable only with a provable invariant and a comment explaining why.
 
 ### Safe patterns
 
@@ -66,7 +73,7 @@ For generics (`in`/`out` variance, star projection, reified types), type aliases
 data class User(val id: String, val name: String, val email: String)
 ```
 
-Use `val` properties. **Always prefer data classes over `Map<String, Any>`** — maps lose type safety, autocompletion, and refactoring support.
+MUST use `val` properties. ALWAYS prefer data classes over `Map<String, Any>` — maps lose type safety, autocompletion, and refactoring support.
 
 ### `sealed class` / `sealed interface` — restricted hierarchies
 
@@ -117,8 +124,8 @@ sealed interface FetchResult {
 ```
 
 Rules:
-- `require()` for argument validation, `check()` for state validation.
-- Catch the narrowest exception. Never catch `Throwable` unless re-throwing.
+- ALWAYS use `require()` for argument validation, `check()` for state validation.
+- MUST catch the narrowest exception. NEVER catch `Throwable` unless re-throwing.
 - Prefer sealed hierarchies over exceptions for expected outcomes.
 - See `references/patterns.md` for the full error handling decision guide.
 
@@ -134,11 +141,11 @@ suspend fun loadDashboard(): Dashboard = coroutineScope {
 }
 ```
 
-Key rules:
-- Always use structured concurrency — never `GlobalScope`.
+Rules:
+- MUST use structured concurrency — NEVER use `GlobalScope`.
 - `coroutineScope` when all must succeed; `supervisorScope` when partial failure is OK.
 - `launch` for fire-and-forget; `async` when you need the result.
-- Never swallow `CancellationException` — always rethrow it.
+- NEVER swallow `CancellationException` — ALWAYS rethrow it.
 - Use `withContext(Dispatchers.IO)` for blocking I/O; `Dispatchers.Default` for CPU work.
 
 For Flow, Channels, exception handling, cancellation patterns, timeouts, and testing, see `references/coroutines.md`.
@@ -208,10 +215,3 @@ For full patterns, see `references/patterns.md`.
 | Hard-coded dependencies | Constructor injection; depend on interfaces |
 | `when` without exhaustive check | Use sealed types or add `else` branch |
 
-## Additional Resources
-
-For detailed guidance beyond this overview, consult:
-- **`references/type-system.md`** — Generics, variance, smart casts, inline/value classes, `Nothing` type, SAM conversions
-- **`references/patterns.md`** — Scope functions, sealed hierarchies, delegation, extensions, DSL builders, sequences, precision arithmetic, domain modeling, testable design, error handling decision guide
-- **`references/coroutines.md`** — Flow, StateFlow/SharedFlow, Channels, exception handling, cancellation, timeouts, structured concurrency, testing
-- **`references/project-structure.md`** — `build.gradle.kts`, directory layout, multi-module projects, compiler options, testing setup
