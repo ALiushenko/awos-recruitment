@@ -239,6 +239,22 @@ FeatureSettings─┘    │
 - **UIComponents has zero business logic** — pure view components and modifiers.
 - **App target is the composition root** — it imports all feature modules and wires them together.
 
+### When to create a new module
+
+| Signal | Action |
+|---|---|
+| Component is a self-contained logical unit (player, auth, networking, analytics) | Extract to its own module — even with a single consumer. Benefits: incremental compilation (unchanged module is not recompiled), enforced access boundaries (`internal` scoped to module), isolated testability, ready for reuse without refactoring. |
+| Code is used by 2+ feature modules | Extract to a `Core` or shared package |
+| Feature has its own team or release cycle | Own SPM package under `Packages/` |
+| Build time is growing — large target causes frequent recompilation | Split into smaller SPM targets with narrower dependencies |
+| You need different platform support for a subset of code | Separate target with its own platform requirements |
+
+### When NOT to create a module
+
+- **Tiny scope** — a single extension or utility function doesn't justify a module. Put it in `Core`.
+- **No clear boundary** — if you can't define a clean public API for the module, it's not ready to be extracted.
+- **Over-splitting** — each SPM target adds build graph complexity and Package.swift maintenance. A well-organized project with 8-12 targets is better than 40 micro-targets with 2 files each.
+
 ### Adding local packages to the Xcode project
 
 1. Drag the `Packages/` directory (or individual package folders) into the Xcode project navigator.
