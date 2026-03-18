@@ -35,6 +35,8 @@ For Swift language fundamentals (type system, optionals, error handling, concurr
 - **`references/widgets-app-intents.md`** — WidgetKit (timeline, configuration), App Intents, Shortcuts, Live Activities
 - **`references/carplay-patterns.md`** — CarPlay app lifecycle, CPTemplate API, navigation, media, EV charging, communication apps
 - **`references/objc-interop.md`** — Bridging headers, `@objc`, `NS_SWIFT_NAME`, nullability annotations, incremental migration
+- **`references/testing.md`** — Swift Testing (@Test, #expect, traits, parameterized), XCTest (unit tests, async, performance), XCUITest (UI automation, page objects), test doubles, snapshot testing, test plans, CI/CD
+- **`references/code-quality.md`** — SwiftLint (configuration, rules, custom rules), SwiftFormat, Periphery (dead code), Xcode static analysis, sanitizers, CI/CD quality gates
 
 ## Code Style
 
@@ -339,31 +341,13 @@ For SPM multi-module setup, build configurations, targets, schemes see `referenc
 
 ## Testable Design
 
-For general testable design patterns (DI, fakes over mocks, protocol-based injection), see the `swift-development` skill. Below are Apple platform-specific testing patterns.
+For general testable design patterns (DI, fakes over mocks, protocol-based injection), see the `swift-development` skill. For comprehensive testing guidance, see `references/testing.md` (Swift Testing, XCTest, XCUITest, test doubles, test plans, CI/CD) and `references/code-quality.md` (linting, static analysis, sanitizers).
 
+Key principles:
 - **`@Environment` injection** — use SwiftUI environment for injecting dependencies in the view layer.
-- **ViewInspector or snapshot tests** — for testing SwiftUI view output.
-- **XCTest UI tests** — for end-to-end flows on device/simulator.
-
-```swift
-// Environment-based injection for views
-private struct UserRepositoryKey: EnvironmentKey {
-    static let defaultValue: UserRepository = RemoteUserRepository()
-}
-
-extension EnvironmentValues {
-    var userRepository: UserRepository {
-        get { self[UserRepositoryKey.self] }
-        set { self[UserRepositoryKey.self] = newValue }
-    }
-}
-
-// Inject in previews/tests
-#Preview {
-    HomeView()
-        .environment(\.userRepository, FakeUserRepository())
-}
-```
+- **Protocol-based DI** — inject dependencies via init for testability. Inject `Clock` for time-dependent code.
+- **Snapshot tests** — verify UI appearance with swift-snapshot-testing.
+- **XCUITest** — for end-to-end flows on device/simulator with Page Object pattern.
 
 ## Platform-Specific Guidance
 
