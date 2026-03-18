@@ -36,7 +36,7 @@ For Swift language fundamentals (type system, optionals, error handling, concurr
 - **`references/carplay-patterns.md`** — CarPlay app lifecycle, CPTemplate API, navigation, media, EV charging, communication apps
 - **`references/objc-interop.md`** — Bridging headers, `@objc`, `NS_SWIFT_NAME`, nullability annotations, incremental migration
 - **`references/testing.md`** — Swift Testing (@Test, #expect, traits, parameterized), XCTest (unit tests, async, performance), XCUITest (UI automation, page objects), test doubles, snapshot testing, test plans, CI/CD
-- **`references/code-quality.md`** — SwiftLint (configuration, rules, custom rules), SwiftFormat, Periphery (dead code), Xcode static analysis, sanitizers, CI/CD quality gates
+- **`references/code-quality.md`** — Xcode Static Analyzer, sanitizers (ASan, TSan, UBSan), Periphery (dead code), Danger-Swift, Xcode build settings, xcconfig. For SwiftLint/SwiftFormat, see `swift-development` skill's `references/static-analysis.md`
 
 ## Code Style
 

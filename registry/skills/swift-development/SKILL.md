@@ -16,6 +16,7 @@ Applicable to all Swift targets: Apple platforms, server-side (Vapor, Hummingbir
 - **`references/concurrency.md`** — Actors, task groups, async sequences, Sendable, isolation, GCD migration, Combine interop
 - **`references/patterns.md`** — Property wrappers, result builders, key paths, Codable, extensions, copy-on-write, DSL design
 - **`references/project-structure.md`** — Swift Package Manager setup, multi-target packages, build configurations, plugins, testing setup
+- **`references/static-analysis.md`** — SwiftLint (configuration, rules, custom rules, auto-correct), SwiftFormat (configuration, formatting rules), combined setup, CI/CD integration, pre-commit hooks
 
 ## Code Style
 
