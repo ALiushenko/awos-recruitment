@@ -30,7 +30,9 @@ For Kotlin language fundamentals (null safety, coroutines, data modeling, error 
 - **`references/android-automotive-patterns.md`** — Android Automotive OS (AAOS), embedded car system, car hardware APIs, system UI
 - **`references/java-interop.md`** — Calling Java from Kotlin, nullability annotations, SAM conversions, incremental migration
 - **`references/meta-quest-patterns.md`** — Adapting Android APK for Meta Quest, spatial UI, entitlement check, VR input, passthrough
+- **`references/networking-api.md`** — Retrofit, OkHttp, Ktor Client, JSON serialization, repository pattern, error handling, interceptors, certificate pinning, caching, connectivity, Paging 3, file upload/download, testing
 - **`references/fire-tv-patterns.md`** — Amazon Fire TV, Appstore, Amazon IAP, Alexa integration, missing Google Play Services
+- **`references/media-playback.md`** — Media3 / ExoPlayer, MediaSession, audio focus, Picture-in-Picture, offline downloads, DRM, streaming formats, caching
 - **`references/fire-tablet-patterns.md`** — Amazon Fire Tablets, device capabilities, Show Mode, Kids Edition, Special Offers
 
 ## Code Style
