@@ -1046,6 +1046,61 @@ Rules for multi-platform:
 - Use `#if os()` sparingly and only in leaf views. Extract platform differences into dedicated types when the conditional logic grows beyond a few lines.
 - Test shared logic on one platform; test platform-specific code on its target platform.
 
+### Multi-target apps (same platform, different brands/products)
+
+When a project has multiple app targets (e.g., different branded apps sharing a codebase), **never use `#if` compiler directives or custom build flags to branch behavior between targets.** `#if` is designed to exclude code from compilation entirely (e.g., `#if DEBUG`, `#if os(iOS)`), not to implement polymorphism between app variants.
+
+Instead, use one of these approaches:
+
+**1. Dependency injection (preferred)** — define a protocol for the varying behavior, provide a per-target conformance, and inject at the composition root:
+
+```swift
+// Shared protocol
+protocol AppConfiguration {
+    var appName: String { get }
+    var primaryColor: Color { get }
+    var featureFlags: FeatureFlags { get }
+}
+
+// Target A implementation (in Target A's file membership)
+struct TargetAConfiguration: AppConfiguration {
+    let appName = "App A"
+    let primaryColor = Color.blue
+    let featureFlags = FeatureFlags(showPremium: true)
+}
+
+// Target B implementation (in Target B's file membership)
+struct TargetBConfiguration: AppConfiguration {
+    let appName = "App B"
+    let primaryColor = Color.green
+    let featureFlags = FeatureFlags(showPremium: false)
+}
+
+// Inject at app entry point
+@main
+struct MyApp: App {
+    let config: AppConfiguration = TargetAConfiguration() // per-target
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environment(\.appConfig, config)
+        }
+    }
+}
+```
+
+**2. Separate files per target** — create one file per target with the same type name, and assign each file to the correct target membership in Xcode. The linker resolves the right implementation at build time.
+
+```
+MyApp/
+├── Config/
+│   ├── AppConfig+TargetA.swift    # target membership: Target A only
+│   └── AppConfig+TargetB.swift    # target membership: Target B only
+```
+
+This keeps code clean, testable, and avoids the maintenance burden of scattered `#if` blocks that are hard to audit and easy to break.
+
 ## Dependency Management
 
 ### SPM (preferred for new projects)

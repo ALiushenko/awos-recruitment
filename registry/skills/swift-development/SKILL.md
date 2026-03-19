@@ -320,3 +320,4 @@ Prefer Swift Testing (`@Test`, `#expect`) over XCTest for new code. Use XCTest w
 | `Any` / `AnyObject` without reason | Use generics or existentials with constraints |
 | `Double` for money | Use `Decimal` with explicit rounding |
 | Hard-coded dependencies | Protocol-based DI via init injection |
+| `#if` directives for multi-target polymorphism | Use DI or separate file implementations per target; reserve `#if` for `DEBUG`, `os()`, `canImport()` |
