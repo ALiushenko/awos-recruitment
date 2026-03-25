@@ -829,15 +829,18 @@ Task {
 
 ### When to keep Combine
 
+Combine is not deprecated and remains the right tool for specific patterns. AsyncStream is **unicast** (single consumer), while Combine subjects are **multicast** (multiple subscribers with backpressure). They are complementary, not interchangeable.
+
+- **Multi-subscriber reactive streams** — `CurrentValueSubject`, `PassthroughSubject` with multiple observers. AsyncStream cannot replicate this without manual fan-out.
+- **Complex stream operators** — `debounce`, `throttle`, `combineLatest`, `merge`, `scan`, `switchToLatest` with backpressure. AsyncSequence operators are more limited.
 - **SwiftUI `@Published` with `ObservableObject`** — if targeting iOS 16 or earlier.
-- **Complex stream operators** — `debounce`, `throttle`, `combineLatest`, `merge` with backpressure. AsyncSequence operators are more limited.
 - **KVO observation** — Combine's `publisher(for:)` is still convenient for observing UIKit properties.
 
-### When to replace with async/await
+### When to use async/await instead
 
 - **Single-shot async work** — API calls, database queries. Use `async throws` instead of `Future`.
-- **Simple data flow** — replace `PassthroughSubject`/`CurrentValueSubject` with `AsyncStream` or actors.
-- **iOS 17+ projects** — `@Observable` replaces `ObservableObject`/`@Published` entirely.
+- **Single-consumer async sequences** — bridging a delegate/callback API for one consumer. Use `AsyncStream`.
+- **iOS 17+ view model state** — `@Observable` replaces `ObservableObject`/`@Published` entirely, no Combine needed.
 
 ### Bridging: `values` property (AsyncPublisher)
 
@@ -900,48 +903,16 @@ class SearchViewModel {
 }
 ```
 
-### Replacing `CurrentValueSubject` with actor + AsyncStream
+### Choosing the right tool
 
-```swift
-// Before
-class SettingsStore {
-    let theme = CurrentValueSubject<Theme, Never>(.system)
-}
-
-// After
-actor SettingsStore {
-    private var _theme: Theme = .system
-    private var continuations: [UUID: AsyncStream<Theme>.Continuation] = [:]
-
-    var theme: Theme { _theme }
-
-    func setTheme(_ theme: Theme) {
-        _theme = theme
-        for (_, continuation) in continuations {
-            continuation.yield(theme)
-        }
-    }
-
-    func themeUpdates() -> AsyncStream<Theme> {
-        AsyncStream { continuation in
-            let id = UUID()
-            continuation.yield(_theme) // Emit current value
-            Task { await storeContinuation(continuation, id: id) }
-            continuation.onTermination = { _ in
-                Task { await self.removeContinuation(id: id) }
-            }
-        }
-    }
-
-    private func storeContinuation(_ continuation: AsyncStream<Theme>.Continuation, id: UUID) {
-        continuations[id] = continuation
-    }
-
-    private func removeContinuation(id: UUID) {
-        continuations[id] = nil
-    }
-}
-```
+| Need | Recommended tool |
+|---|---|
+| SwiftUI view model state (iOS 17+) | `@Observable` |
+| Single-shot async data fetching | `async/await` |
+| Single-consumer async sequence | `AsyncStream` / `AsyncSequence` |
+| Multi-subscriber reactive streams | Combine (`CurrentValueSubject`, `PassthroughSubject`) |
+| Complex stream operators (`combineLatest`, `debounce`, etc.) | Combine |
+| Cross-platform async sequences | `AsyncSequence` + Swift Async Algorithms |
 
 ## Common Pitfalls
 
