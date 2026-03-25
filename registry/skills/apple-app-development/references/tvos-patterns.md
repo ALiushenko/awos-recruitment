@@ -34,12 +34,15 @@ struct MenuView: View {
 }
 ```
 
-Any view can opt in to focus with `.focusable()`:
+Any view can opt in to focus with `.focusable()`. Use `@FocusState` with `onChange(of:)` to react to focus changes:
 
 ```swift
+@FocusState private var isFocused: Bool
+
 Text("Focusable label")
     .focusable()
-    .onFocusChange { isFocused in
+    .focused($isFocused)
+    .onChange(of: isFocused) { _, newValue in
         // react to focus gain/loss
     }
 ```

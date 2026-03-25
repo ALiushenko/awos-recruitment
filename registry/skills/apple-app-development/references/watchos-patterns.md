@@ -17,7 +17,7 @@
 
 ### Standalone vs companion
 
-watchOS 10+ apps are standalone by default. A companion iPhone app is optional. The watch app has its own bundle identifier, lifecycle, and App Store presence.
+watchOS apps have supported standalone mode since watchOS 6 (via `WKRunsIndependentlyOfCompanionApp`). New Xcode watchOS project templates create standalone apps by default. A companion iPhone app is optional. The watch app has its own bundle identifier, lifecycle, and App Store presence.
 
 ```swift
 // Standalone watchOS app entry point
@@ -75,9 +75,9 @@ enum Route: Hashable {
 
 ## Complications
 
-### WidgetKit-based complications (watchOS 10+)
+### WidgetKit-based complications (watchOS 9+)
 
-watchOS 10 migrated complications to WidgetKit. ClockKit is deprecated.
+ClockKit was deprecated in watchOS 9. Complications are now built with WidgetKit using the same `TimelineProvider` pattern as home screen widgets.
 
 ```swift
 import WidgetKit
