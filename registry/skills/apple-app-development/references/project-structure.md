@@ -761,6 +761,14 @@ struct MyCodeGenPlugin: BuildToolPlugin {
 
 ## CI/CD Considerations
 
+### Options
+
+| Tool | Type | Best For |
+|------|------|----------|
+| **Xcode Cloud** | Apple's first-party CI/CD (25 free compute hours/month) | Simple pipelines, tight Xcode integration, TestFlight distribution |
+| **Fastlane** | Open-source automation | Complex workflows, multi-lane builds, custom signing |
+| **GitHub Actions** | GitHub-native CI | Teams already on GitHub, matrix testing, custom runners |
+
 ### xcodebuild commands
 
 ```bash
@@ -894,20 +902,21 @@ fastlane match development
 ### TestFlight distribution
 
 ```bash
-# Using xcodebuild + altool (legacy)
+# Using altool (still works for App Store Connect uploads, but deprecated for notarization)
 xcrun altool --upload-app \
     --type ios \
     --file build/export/MyApp.ipa \
     --apiKey YOUR_KEY_ID \
     --apiIssuer YOUR_ISSUER_ID
 
-# Using notarytool / Apple Transporter (modern)
-xcrun notarytool submit build/export/MyApp.ipa \
-    --key ~/.private_keys/AuthKey_XXXX.p8 \
-    --key-id YOUR_KEY_ID \
-    --issuer YOUR_ISSUER_ID \
-    --wait
+# Using Apple Transporter (modern, recommended for CI)
+xcrun iTMSTransporter -m upload \
+    -assetFile build/export/MyApp.ipa \
+    -apiKey ~/.private_keys/AuthKey_XXXX.p8 \
+    -apiIssuer YOUR_ISSUER_ID
 ```
+
+> **Note:** `notarytool` is for **macOS app notarization only** — do not use it for iOS/tvOS/watchOS TestFlight uploads. For iOS uploads, use `altool`, Apple Transporter (`iTMSTransporter`), Fastlane, or Xcode Cloud.
 
 Prefer the App Store Connect API key (`.p8` file) over Apple ID credentials for CI authentication.
 

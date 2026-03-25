@@ -289,12 +289,15 @@ struct HomeFeature {
         case deleteItem(id: UUID)
     }
 
+    // Inject dependencies via @Dependency (uses swift-dependencies package)
+    @Dependency(\.itemRepository) var repository
+
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .loadItems:
                 state.isLoading = true
-                return .run { send in
+                return .run { [repository] send in
                     await send(.itemsLoaded(Result { try await repository.getItems() }))
                 }
             case .itemsLoaded(.success(let items)):

@@ -16,6 +16,8 @@ makeUIView  -->  updateUIView (called on every SwiftUI state change)  -->  disma
 
 ### Basic Example
 
+> **Note:** For maps specifically, iOS 17+ provides native SwiftUI MapKit (`Map`, `Marker`, `Annotation`, `MapStyle`, etc.) that covers most use cases. Wrap `MKMapView` only when you need features SwiftUI MapKit lacks (custom overlay renderers, certain delegate callbacks). This example demonstrates the `UIViewRepresentable` lifecycle pattern.
+
 ```swift
 import SwiftUI
 import MapKit
@@ -673,6 +675,29 @@ window.contentViewController = hostingController
 | `UIView` | `NSView` | -- |
 | `UIViewController` | `NSViewController` | -- |
 
+
+## Swift 6 Concurrency and Representables
+
+With Swift 6 strict concurrency, `UIViewRepresentable` and `UIViewControllerRepresentable` protocol methods are `@MainActor`-isolated. Key implications:
+
+- **Coordinator delegate callbacks** that arrive on background threads need explicit `@MainActor` hopping or must be marked `nonisolated` with manual dispatch.
+- Under **Swift 6.2 default MainActor isolation**, most of this is handled automatically — code runs on MainActor unless opted out with `@concurrent` or `nonisolated`.
+- **`@Sendable` closure requirements**: Closures passed across isolation boundaries (e.g., from UIKit delegates to SwiftUI state updates) must be `@Sendable`.
+
+```swift
+// Coordinator with Swift 6 concurrency
+class Coordinator: NSObject, MKMapViewDelegate {
+    var parent: MapView
+
+    // This delegate method may be called on any thread by MapKit.
+    // Under strict concurrency, update @MainActor state explicitly.
+    nonisolated func mapView(_ mapView: MKMapView, didSelect annotation: any MKAnnotation) {
+        Task { @MainActor in
+            parent.selectedAnnotation = annotation
+        }
+    }
+}
+```
 
 ## Common Pitfalls
 

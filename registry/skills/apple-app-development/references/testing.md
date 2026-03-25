@@ -1109,8 +1109,22 @@ final class ProductCardSnapshotTests: XCTestCase {
 Rules:
 - First run generates reference snapshots (test "fails" to create them). Commit these to the repo.
 - Subsequent runs compare against references. Differences cause failure with a diff image.
-- Run `record: true` parameter or set `isRecording = true` to update references after intentional UI changes.
+- To update references: use `withSnapshotTesting(record: .all) { ... }` (scoped, preferred) or `isRecording = true` (global, legacy).
 - Snapshot tests are fragile across OS versions and simulators — pin to a specific device/OS in CI.
+
+#### Swift Testing Support (swift-snapshot-testing 1.17+)
+
+```swift
+import Testing
+import SnapshotTesting
+
+@Test func productCard_renders() {
+    let view = ProductCardView(product: .sample).frame(width: 320)
+    withSnapshotTesting(record: .missing) {
+        assertSnapshot(of: view, as: .image(layout: .sizeThatFits))
+    }
+}
+```
 
 
 ## Test Plans & Configuration

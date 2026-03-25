@@ -83,7 +83,7 @@ struct Endpoint {
     }
 }
 
-final class URLSessionAPIClient: APIClient {
+final class URLSessionAPIClient: APIClient, Sendable {
     private let session: URLSession
     private let baseURL: URL
     private let decoder: JSONDecoder
@@ -456,7 +456,7 @@ Use `NWPathMonitor` (Network framework) instead of deprecated `SCNetworkReachabi
 ```swift
 import Network
 
-@Observable
+@MainActor @Observable
 class NetworkMonitor {
     var isConnected = true
     var isExpensive = false
@@ -527,18 +527,12 @@ class AuthInterceptor: RequestInterceptor {
         self.tokenManager = tokenManager
     }
 
-    func adapt(_ urlRequest: URLRequest, for session: Session,
-               completion: @escaping (Result<URLRequest, Error>) -> Void) {
+    // Alamofire 5.10+ supports async adapt — prefer this over wrapping Task in completion handler
+    func adapt(_ urlRequest: URLRequest, for session: Session) async throws -> URLRequest {
         var request = urlRequest
-        Task {
-            do {
-                let token = try await tokenManager.validToken()
-                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-                completion(.success(request))
-            } catch {
-                completion(.failure(error))
-            }
-        }
+        let token = try await tokenManager.validToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        return request
     }
 
     func retry(_ request: Request, for session: Session, dueTo error: Error,

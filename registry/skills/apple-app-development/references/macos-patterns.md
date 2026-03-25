@@ -684,7 +684,7 @@ struct DrawingApp: App {
 }
 
 struct DrawingCanvas: View {
-    @ObservedObject var document: DrawingDocument
+    var document: DrawingDocument
     @Environment(\.undoManager) var undoManager
 
     func addShape(_ shape: Shape) {

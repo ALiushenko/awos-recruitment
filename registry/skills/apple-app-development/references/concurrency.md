@@ -10,6 +10,7 @@
 - AsyncSequence and AsyncStream (building, consuming, bridging)
 - Migrating from GCD
 - Migrating from Combine
+- Swift 6.2 — Approachable Concurrency (`defaultIsolation`, `nonisolated(nonsending)`, `@concurrent`)
 - Common pitfalls (data races, reentrancy, deadlocks)
 - Testing async code
 
@@ -913,6 +914,125 @@ class SearchViewModel {
 | Multi-subscriber reactive streams | Combine (`CurrentValueSubject`, `PassthroughSubject`) |
 | Complex stream operators (`combineLatest`, `debounce`, etc.) | Combine |
 | Cross-platform async sequences | `AsyncSequence` + Swift Async Algorithms |
+
+## Swift 6.2 — Approachable Concurrency
+
+Swift 6.2 (Xcode 26) introduces **Approachable Concurrency** — a set of defaults that dramatically reduce annotation burden while preserving data-race safety. The key idea: most app code is UI code and should run on `MainActor` by default; only code that genuinely needs concurrency opts into it explicitly.
+
+### `defaultIsolation` build setting
+
+New projects created in Xcode 26 default to `MainActor` isolation for all code. This means every function, property, and type is implicitly `@MainActor` unless explicitly opted out. `@MainActor` annotations on view models, views, and App types become unnecessary — they are already on MainActor.
+
+Enable in **Package.swift**:
+
+```swift
+// swift-tools-version: 6.2
+let package = Package(
+    name: "MyApp",
+    targets: [
+        .executableTarget(
+            name: "MyApp",
+            swiftSettings: [
+                .defaultIsolation(MainActor.self)
+            ]
+        )
+    ]
+)
+```
+
+In Xcode, set the **Default Isolation** build setting to `MainActor` (the default for new Xcode 26 projects).
+
+With `defaultIsolation(MainActor.self)` enabled, this:
+
+```swift
+// Before — explicit annotation required
+@MainActor
+@Observable
+class ProfileViewModel {
+    var name: String = ""
+    func load() async { /* … */ }
+}
+```
+
+becomes:
+
+```swift
+// After — already on MainActor by default, no annotation needed
+@Observable
+class ProfileViewModel {
+    var name: String = ""
+    func load() async { /* … */ }
+}
+```
+
+### `nonisolated(nonsending)` (SE-0461)
+
+Under Approachable Concurrency, `nonisolated async` functions default to running on the **caller's actor** instead of hopping to the global concurrent executor. The compiler applies `nonisolated(nonsending)` semantics automatically — the function inherits the caller's isolation context.
+
+```swift
+// Under Swift 6.2 Approachable Concurrency, this function stays
+// on whatever actor the caller is running on (e.g. MainActor).
+nonisolated func processUserInput(_ text: String) async -> String {
+    // No actor hop — runs on the caller's executor
+    return text.trimmingCharacters(in: .whitespacesAndNewlines)
+}
+
+@MainActor
+func handleInput() async {
+    // processUserInput runs on MainActor — no hop to global executor
+    let cleaned = await processUserInput(rawInput)
+    label.text = cleaned
+}
+```
+
+This eliminates a major source of unexpected thread hops in Swift 5.x / 6.0 code, where every `nonisolated async` call silently moved to a background thread.
+
+### `@concurrent` attribute
+
+When you **do** want a function to leave the caller's actor and run on the global concurrent executor, mark it `@concurrent`. This is the explicit opt-in that replaces the old implicit behavior of `nonisolated async`.
+
+```swift
+@concurrent
+func compressImage(_ data: Data) async -> Data {
+    // Runs on the global concurrent executor — off MainActor.
+    // Safe for CPU-intensive work that should not block UI.
+    return HeavyImageProcessor.compress(data)
+}
+
+@MainActor
+func uploadPhoto() async {
+    let raw = selectedPhotoData
+    // Hops off MainActor into the concurrent pool
+    let compressed = await compressImage(raw)
+    // Back on MainActor
+    await api.upload(compressed)
+}
+```
+
+Use `@concurrent` for CPU-bound work (image processing, parsing large payloads, cryptographic operations) that would block the main thread.
+
+### `nonisolated` on types and extensions (Swift 6.1+)
+
+Starting in Swift 6.1, you can apply `nonisolated` to an entire type or extension to opt all members out of the enclosing default isolation:
+
+```swift
+// Opts the entire struct out of MainActor default isolation
+nonisolated struct MathUtilities {
+    static func fibonacci(_ n: Int) -> Int {
+        n <= 1 ? n : fibonacci(n - 1) + fibonacci(n - 2)
+    }
+}
+
+// Opts all members in this extension out of default isolation
+nonisolated extension DataParser {
+    func parse(_ data: Data) throws -> ParsedResult {
+        // No actor isolation — can be called from any context
+        try JSONDecoder().decode(ParsedResult.self, from: data)
+    }
+}
+```
+
+This is particularly useful in codebases with `defaultIsolation(MainActor.self)` where utility types, pure-logic modules, or model layers should remain actor-independent.
 
 ## Common Pitfalls
 
