@@ -19,19 +19,21 @@ For Kotlin language fundamentals (null safety, coroutines, data modeling, error 
 ## Reference Files
 
 - **`references/compose-patterns.md`** — Composables, state hoisting, recomposition, `remember`, `LazyColumn`, navigation, theming, Material 3, side effects
-- **`references/concurrency.md`** — Coroutines in Android context: `viewModelScope`, `lifecycleScope`, `repeatOnLifecycle`, WorkManager, foreground services
+- **`references/concurrency.md`** — Coroutines in Android context: `viewModelScope`, `lifecycleScope`, `repeatOnLifecycle`, WorkManager, testing
+- **`references/android-background-work.md`** — Foreground Services (types, permissions, restrictions), Background Limits (Doze, App Standby Buckets), AlarmManager (exact/inexact, permissions)
 - **`references/android-lifecycle.md`** — Activity/Fragment lifecycle, `ViewModel`, saved state, process death, configuration changes
 - **`references/view-interop.md`** — `AndroidView`, `ComposeView`, embedding Compose in Views and Views in Compose, migration strategies
 - **`references/project-structure.md`** — Gradle setup, multi-module architecture, build variants, version catalogs, convention plugins
-- **`references/tablet-patterns.md`** — Adaptive layouts, `WindowSizeClass`, multi-window, foldable devices, large screen guidelines
+- **`references/tablet-patterns.md`** — Adaptive layouts, `WindowSizeClass` (`isWidthAtLeastBreakpoint`), multi-window, foldable devices, large screen guidelines
 - **`references/wear-os-patterns.md`** — Compose for Wear OS, Tiles, complications, Health Services, watch face
 - **`references/tv-patterns.md`** — Compose for TV, focus management, Leanback, D-pad navigation, Google TV / Android TV
-- **`references/android-auto-patterns.md`** — Car App Library, templates, phone projection, media apps, messaging apps
-- **`references/android-automotive-patterns.md`** — Android Automotive OS (AAOS), embedded car system, car hardware APIs, system UI
+- **`references/car-app-library.md`** — Car App Library shared API: CarAppService, Session, Screen, ScreenManager, templates, constraints, lifecycle, CarContext, testing
+- **`references/android-auto-patterns.md`** — Android Auto phone projection: Media3 MediaLibraryService, messaging notifications, navigation/DHU, POI, distribution
+- **`references/android-automotive-patterns.md`** — Android Automotive OS (AAOS): AAOS-specific Car App Library diffs, car hardware APIs, HVAC, system UI, multi-user, OEM customization, multi-zone audio
 - **`references/java-interop.md`** — Calling Java from Kotlin, nullability annotations, SAM conversions, incremental migration
 - **`references/meta-quest-patterns.md`** — Adapting Android APK for Meta Quest, spatial UI, entitlement check, VR input, passthrough
 - **`references/local-storage.md`** — Room database (entities, DAOs, relations, migrations, testing), DataStore (Preferences and Proto), encrypted storage (Android Keystore, DataStore + Tink, SQLCipher), file storage (internal, scoped storage, FileProvider), storage selection guide
-- **`references/networking-api.md`** — Retrofit, OkHttp, Ktor Client, JSON serialization, repository pattern, error handling, interceptors, certificate pinning, caching, connectivity, Paging 3, file upload/download, testing
+- **`references/networking-api.md`** — Retrofit, OkHttp, Ktor Client, JSON serialization, repository pattern, error handling, interceptors, certificate pinning, caching, connectivity, pagination (custom + Paging 3), file upload/download, testing
 - **`references/fire-tv-patterns.md`** — Amazon Fire TV, Appstore, Amazon IAP, Alexa integration, missing Google Play Services
 - **`references/media-playback.md`** — Media3 / ExoPlayer, MediaSession, audio focus, Picture-in-Picture, offline downloads, DRM, streaming formats, caching
 - **`references/billing-payments.md`** — Google Play Billing Library (PBL 8), BillingClient, one-time purchases (consumable / non-consumable), subscriptions (base plans, offers, replacement modes), subscription offers (eligibility types, pricing phases, offer tags, developer-determined offers, winback offers, promo codes), purchase verification, RTDN, subscription lifecycle (grace period, account hold, pause), alternative billing, testing
@@ -364,8 +366,9 @@ The core skill covers Android phone by default. For other platforms, consult the
 | Tablet / Foldable | `references/tablet-patterns.md` | `WindowSizeClass`, adaptive layouts, multi-window, foldable postures |
 | Wear OS | `references/wear-os-patterns.md` | Compose for Wear, Tiles, complications, Health Services |
 | Google TV / Android TV | `references/tv-patterns.md` | Compose for TV, focus/D-pad navigation, Leanback |
-| Android Auto | `references/android-auto-patterns.md` | Car App Library, templates, phone projection |
-| Android Automotive | `references/android-automotive-patterns.md` | AAOS, embedded system, car hardware APIs |
+| Car App Library | `references/car-app-library.md` | Shared API for Auto + AAOS: templates, lifecycle, testing |
+| Android Auto | `references/android-auto-patterns.md` | Phone projection, Media3, messaging, DHU |
+| Android Automotive | `references/android-automotive-patterns.md` | AAOS, car hardware, HVAC, multi-user, OEM |
 | Meta Quest | `references/meta-quest-patterns.md` | Adapting APK for VR, spatial UI, entitlement, passthrough |
 | Amazon Fire TV | `references/fire-tv-patterns.md` | Appstore, Amazon IAP, Alexa, missing GMS |
 | Amazon Fire Tablets | `references/fire-tablet-patterns.md` | Device lineup, Show Mode, Kids Edition |

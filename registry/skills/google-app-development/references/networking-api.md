@@ -12,7 +12,7 @@ Covers HTTP clients, JSON serialization, repository pattern for network calls, e
 - Certificate Pinning — OkHttp CertificatePinner
 - Caching — OkHttp cache, ETag/Last-Modified, offline-first with Room
 - Connectivity Monitoring — ConnectivityManager, NetworkCallback, reactive status
-- Pagination — Paging 3 with network source, RemoteMediator
+- Pagination — custom pagination (recommended), Paging 3 (optional)
 - File Upload / Download — multipart, progress tracking
 - Testing — MockWebServer, fake repositories
 
@@ -594,28 +594,133 @@ class HomeViewModel @Inject constructor(
 **Rule:** Use `ConnectivityManager.NetworkCallback` — do not poll or use deprecated `NetworkInfo`. Expose connectivity as a `StateFlow` for reactive UI updates.
 
 
-## Pagination (Paging 3)
+## Pagination
 
-### Gradle Setup
+### Custom Pagination (Recommended)
+---
+
+For most use cases, a simple custom pagination approach is easier to implement, debug, and customize than Paging 3. The ViewModel tracks page state and loading, while the UI triggers load-more on scroll.
+
+#### Repository
 
 ```kotlin
-// libs.versions.toml
-[versions]
-paging = "<latest>"
-
-[libraries]
-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "paging" }
-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
+class ItemRepository @Inject constructor(
+    private val api: ItemApi,
+) {
+    suspend fun getItems(page: Int, pageSize: Int): Result<List<Item>> = runCatching {
+        api.getItems(page = page, limit = pageSize).data.map { it.toDomain() }
+    }
+}
 ```
 
-### PagingSource (Network Only)
+#### ViewModel
 
 ```kotlin
+data class ItemListUiState(
+    val items: List<Item> = emptyList(),
+    val isLoading: Boolean = false,
+    val isLoadingMore: Boolean = false,
+    val hasMore: Boolean = true,
+    val error: String? = null,
+)
+
+@HiltViewModel
+class ItemListViewModel @Inject constructor(
+    private val repository: ItemRepository,
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(ItemListUiState())
+    val uiState: StateFlow<ItemListUiState> = _uiState.asStateFlow()
+
+    private var currentPage = 1
+    private val pageSize = 20
+
+    init { loadItems() }
+
+    fun loadItems() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            currentPage = 1
+            repository.getItems(page = currentPage, pageSize = pageSize)
+                .onSuccess { items ->
+                    _uiState.update {
+                        it.copy(
+                            items = items,
+                            isLoading = false,
+                            hasMore = items.size >= pageSize,
+                        )
+                    }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                }
+        }
+    }
+
+    fun loadMore() {
+        if (_uiState.value.isLoadingMore || !_uiState.value.hasMore) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingMore = true) }
+            val nextPage = currentPage + 1
+            repository.getItems(page = nextPage, pageSize = pageSize)
+                .onSuccess { items ->
+                    currentPage = nextPage
+                    _uiState.update {
+                        it.copy(
+                            items = it.items + items,
+                            isLoadingMore = false,
+                            hasMore = items.size >= pageSize,
+                        )
+                    }
+                }
+                .onFailure { e ->
+                    _uiState.update { it.copy(isLoadingMore = false, error = e.message) }
+                }
+        }
+    }
+}
+```
+
+#### Compose UI
+
+```kotlin
+@Composable
+fun ItemListScreen(viewModel: ItemListViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LazyColumn {
+        items(uiState.items, key = { it.id }) { item ->
+            ItemCard(item)
+        }
+
+        // Trigger load-more when approaching the end
+        item {
+            if (uiState.hasMore && !uiState.isLoadingMore) {
+                LaunchedEffect(Unit) { viewModel.loadMore() }
+            }
+            if (uiState.isLoadingMore) {
+                LoadingIndicator()
+            }
+        }
+    }
+}
+```
+
+### Paging 3 (Optional)
+---
+
+Paging 3 (`androidx.paging`) is available but notoriously difficult to work with — prefer the custom approach above for most use cases. Paging 3 may be worth considering when you need efficient pagination over a large local Room database, as Room's built-in `PagingSource` integration handles incremental loading well.
+
+```kotlin
+// Gradle
+implementation("androidx.paging:paging-runtime:<latest>")
+implementation("androidx.paging:paging-compose:<latest>")
+
+// PagingSource for network-only
 class ItemPagingSource(
     private val api: ItemApi,
     private val query: String,
 ) : PagingSource<Int, Item>() {
-
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Item> = try {
         val page = params.key ?: 1
         val response = api.searchItems(query = query, page = page, limit = params.loadSize)
@@ -624,105 +729,22 @@ class ItemPagingSource(
             prevKey = if (page == 1) null else page - 1,
             nextKey = if (response.data.size < params.loadSize) null else page + 1,
         )
-    } catch (e: IOException) {
-        LoadResult.Error(e)
-    } catch (e: HttpException) {
+    } catch (e: Exception) {
         LoadResult.Error(e)
     }
 
     override fun getRefreshKey(state: PagingState<Int, Item>): Int? =
         state.anchorPosition?.let { state.closestPageToPosition(it)?.prevKey?.plus(1) }
 }
+
+// ViewModel: always cachedIn(viewModelScope) to survive configuration changes
+val items: Flow<PagingData<Item>> = Pager(PagingConfig(pageSize = 20)) {
+    ItemPagingSource(api, query)
+}.flow.cachedIn(viewModelScope)
+
+// Compose: collectAsLazyPagingItems()
+val items = viewModel.items.collectAsLazyPagingItems()
 ```
-
-### ViewModel + Compose
-
-```kotlin
-@HiltViewModel
-class SearchViewModel @Inject constructor(
-    private val api: ItemApi,
-) : ViewModel() {
-
-    private val _query = MutableStateFlow("")
-
-    val items: Flow<PagingData<Item>> = _query
-        .debounce(300)
-        .flatMapLatest { query ->
-            Pager(PagingConfig(pageSize = 20, prefetchDistance = 5)) {
-                ItemPagingSource(api, query)
-            }.flow.cachedIn(viewModelScope)
-        }
-
-    fun onQueryChanged(query: String) { _query.value = query }
-}
-```
-
-```kotlin
-@Composable
-fun SearchScreen(viewModel: SearchViewModel = hiltViewModel()) {
-    val items = viewModel.items.collectAsLazyPagingItems()
-
-    LazyColumn {
-        items(items.itemCount) { index ->
-            items[index]?.let { ItemCard(it) }
-        }
-
-        when (items.loadState.append) {
-            is LoadState.Loading -> item { LoadingIndicator() }
-            is LoadState.Error -> item {
-                RetryButton(onClick = { items.retry() })
-            }
-            else -> {}
-        }
-    }
-}
-```
-
-### RemoteMediator (Network + Room)
-
-Use `RemoteMediator` when you need offline-first pagination — data is fetched from the network and cached in Room. The `PagingSource` reads from Room while `RemoteMediator` handles fetching more pages from the network.
-
-```kotlin
-@OptIn(ExperimentalPagingApi::class)
-class ItemRemoteMediator(
-    private val api: ItemApi,
-    private val db: AppDatabase,
-) : RemoteMediator<Int, ItemEntity>() {
-
-    override suspend fun load(
-        loadType: LoadType,
-        state: PagingState<Int, ItemEntity>,
-    ): MediatorResult {
-        val page = when (loadType) {
-            LoadType.REFRESH -> 1
-            LoadType.PREPEND -> return MediatorResult.Success(endOfPaginationReached = true)
-            LoadType.APPEND -> {
-                val lastItem = state.lastItemOrNull()
-                    ?: return MediatorResult.Success(endOfPaginationReached = true)
-                lastItem.nextPage ?: return MediatorResult.Success(endOfPaginationReached = true)
-            }
-        }
-
-        return try {
-            val response = api.getItems(page = page, limit = state.config.pageSize)
-            db.withTransaction {
-                if (loadType == LoadType.REFRESH) db.itemDao().clearAll()
-                db.itemDao().insertAll(response.data.map { it.toEntity(nextPage = page + 1) })
-            }
-            MediatorResult.Success(endOfPaginationReached = response.data.isEmpty())
-        } catch (e: IOException) {
-            MediatorResult.Error(e)
-        } catch (e: HttpException) {
-            MediatorResult.Error(e)
-        }
-    }
-}
-```
-
-**Rules:**
-- Use `PagingSource` for network-only pagination. Use `RemoteMediator` for offline-first.
-- Always `cachedIn(viewModelScope)` to survive configuration changes.
-- Handle all three `LoadState` values (`Loading`, `Error`, `NotLoading`) in UI.
 
 
 ## File Upload / Download
